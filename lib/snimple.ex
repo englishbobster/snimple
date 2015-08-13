@@ -1,0 +1,2 @@
+defmodule Snimple do
+end
