@@ -1,18 +1,31 @@
 defmodule Snimple.BER do
 
 	import Bitwise, only: [&&&: 2, |||: 2, >>>: 2]
-	
+
+	def type_identifier do
+		%{
+			int32:       << 2 >>,
+		  octetstring: << 4 >>,
+		  null:        << 5 >>,
+		  oid:         << 6 >>
+		 }
+	end
+		
 	def ber(:int32, value) when is_integer(value) do
 		value_as_bin = :binary.encode_unsigned(value)
-		<< 2 >> <> << byte_size(value_as_bin) >> <> value_as_bin
+		Dict.get(type_identifier, :int32) <>
+	  << byte_size(value_as_bin) >> <>
+		value_as_bin
 	end
 
 	def ber(:octetstring, value) when is_binary(value) do
-		<< 4 >> <> << byte_size(value) >> <> value
+		Dict.get(type_identifier, :octetstring) <>
+	  << byte_size(value) >> <>
+		value
 	end
 
 	def ber(:null) do
-		<< 5, 0 >>
+		Dict.get(type_identifier, :null) <> << 0 >>
 	end
 
 	def ber(:oid, oid_string) do
@@ -20,7 +33,7 @@ defmodule Snimple.BER do
 		|> String.split(".") |> Enum.map(fn nr -> String.to_integer(nr) end)
 		{[a, b], oid_tail} = oid_nodes |> Enum.split(2)
 		oid = oid_tail |> Enum.map(fn oid_node -> encode_oid_node(oid_node) end) |> Enum.join
-		<< 6 >> <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
+		Dict.get(type_identifier, :oid) <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
  	end
 
 	def encode_oid_node(node) when node <= 127 do
