@@ -4,10 +4,10 @@ defmodule Snimple.BER do
 
 	def type_identifier do
 		%{
-			int32:       << 2 >>,
-		  octetstring: << 4 >>,
-		  null:        << 5 >>,
-		  oid:         << 6 >>
+			int32:       << 0x02 >>,
+		  octetstring: << 0x04 >>,
+		  null:        << 0x05 >>,
+		  oid:         << 0x06 >>
 		 }
 	end
 		
@@ -44,7 +44,6 @@ defmodule Snimple.BER do
 		value = << Bitwise.&&&(node, 0x7F) >>
 		_encode(Bitwise.>>>(node, 7), value, size - 7)
 	end
-	
 	defp _encode(_, current, value) when value <= 0 do
 		current
 	end
