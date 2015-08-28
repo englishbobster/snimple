@@ -1,6 +1,6 @@
 defmodule Snimple.BER do
 
-	require Bitwise
+	import Bitwise, only: [&&&: 2, |||: 2, >>>: 2]
 	
 	def ber(:int32, value) when is_integer(value) do
 		value_as_bin = :binary.encode_unsigned(value)
@@ -16,7 +16,8 @@ defmodule Snimple.BER do
 	end
 
 	def ber(:oid, oid_string) do
-		oid_nodes = oid_string |> String.strip(?.) |> String.split(".") |> Enum.map(fn nr -> String.to_integer(nr) end)
+		oid_nodes = oid_string |> String.strip(?.)
+		|> String.split(".") |> Enum.map(fn nr -> String.to_integer(nr) end)
 		{[a, b], oid_tail} = oid_nodes |> Enum.split(2)
 		oid = oid_tail |> Enum.map(fn oid_node -> encode_oid_node(oid_node) end) |> Enum.join
 		<< 6 >> <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
