@@ -7,28 +7,33 @@ defmodule Snimple.BER do
 			int32:       << 0x02 >>,
 		  octetstring: << 0x04 >>,
 		  null:        << 0x05 >>,
-		  oid:         << 0x06 >>
+		  oid:         << 0x06 >>,
+			sequence:    << 0x30 >>
 		 }
 	end
+
+	def ber_encode(:sequence, seq) when is_binary(seq) do
+		Dict.get(type_identifier, :sequence) <> << byte_size(seq) >> <> seq
+	end
 		
-	def ber(:int32, value) when is_integer(value) do
+	def ber_encode(:int32, value) when is_integer(value) do
 		value_as_bin = :binary.encode_unsigned(value)
 		Dict.get(type_identifier, :int32) <>
 	  << byte_size(value_as_bin) >> <>
 		value_as_bin
 	end
 
-	def ber(:octetstring, value) when is_binary(value) do
+	def ber_encode(:octetstring, value) when is_binary(value) do
 		Dict.get(type_identifier, :octetstring) <>
 	  << byte_size(value) >> <>
 		value
 	end
 
-	def ber(:null) do
-		Dict.get(type_identifier, :null) <> << 0 >>
+	def ber_encode(:null) do
+		Dict.get(type_identifier, :null) <> << byte_size(<<>>) >>
 	end
 
-	def ber(:oid, oid_string) do
+	def ber_encode(:oid, oid_string) do
 		oid_nodes = oid_string |> String.strip(?.)
 		|> String.split(".") |> Enum.map(fn nr -> String.to_integer(nr) end)
 		{[a, b], oid_tail} = oid_nodes |> Enum.split(2)
