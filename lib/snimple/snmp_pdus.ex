@@ -1,4 +1,4 @@
-defmodule Snimple.SNMPGet do
+defmodule Snimple.SnmpPdus do
 
 	def make_snmp_get() do
 		<<11>>
