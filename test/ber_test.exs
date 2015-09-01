@@ -8,8 +8,8 @@ defmodule BERTest do
 	end
 	
 	test "should be able to encode an integer32 according to BER_ENCODE" do
-		assert ber_encode(:int32, 8) == << 2, 1, 8 >>
-		assert ber_encode(:int32, 256) == << 2, 2, 1, 0 >>
+		assert ber_encode(8, :int32) == << 2, 1, 8 >>
+		assert ber_encode(256, :int32) == << 2, 2, 1, 0 >>
 	end
 
 	test "should be able to encode null value according to BER_ENCODE" do
@@ -18,7 +18,7 @@ defmodule BERTest do
 
 	test "should be able to encode an octetstring according to BER_ENCODE" do
 		test_string_size = byte_size(test_string)
-		assert ber_encode(:octetstring, test_string) == << 4 >> <> <<test_string_size>> <> test_string
+		assert ber_encode(test_string, :octetstring) == << 4 >> <> <<test_string_size>> <> test_string
 	end
 
 	test "should be able to encode assorted OIDs according to BER_ENCODE" do
@@ -28,12 +28,12 @@ defmodule BERTest do
 		oid_4 = ".1.3.6.1.4.1.19865.1.2.1.6.0"             #zero at the end
 		oid_5 = "1.3.6.1.4.1.19865.1.2.1.6.0"              #no . as start
 		oid_6 = "1.3.0.1.4.1.2680.1.2.7.3.2.19865.0"       #unholy combo      
-		assert ber_encode(:oid, oid_1) == << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >>
-		assert ber_encode(:oid, oid_2) == << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 2, 1, 1, 72, 141, 3 >>
-		assert ber_encode(:oid, oid_3) == << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 0, 1, 1, 72, 141, 3 >>
-		assert ber_encode(:oid, oid_4) == <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>>
-		assert ber_encode(:oid, oid_5) == <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>>
-		assert ber_encode(:oid, oid_6) == <<6, 16, 43, 0, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 129, 155, 25, 0 >>
+		assert ber_encode(oid_1, :oid) == << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >>
+		assert ber_encode(oid_2, :oid) == << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 2, 1, 1, 72, 141, 3 >>
+		assert ber_encode(oid_3, :oid) == << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 0, 1, 1, 72, 141, 3 >>
+		assert ber_encode(oid_4, :oid) == <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>>
+		assert ber_encode(oid_5, :oid) == <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>>
+		assert ber_encode(oid_6, :oid) == <<6, 16, 43, 0, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 129, 155, 25, 0 >>
 	end
 
 	test "should encode an oid node less than 128" do
@@ -48,8 +48,8 @@ defmodule BERTest do
 
 	test "should encode a sequence correctly" do
 		value = ber_encode(:null)
-		oid = ber_encode(:oid, ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16")
-		assert ber_encode(:sequence, oid <> value) ==  << 48, 19 >> <>  << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >> <> << 5, 0 >>
+		oid = ber_encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
+		assert ber_encode(oid <> value, :sequence) ==  << 48, 19 >> <>  << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >> <> << 5, 0 >>
 	end
 	
 	test "nr_of_bits should return correct value for some inputs" do
