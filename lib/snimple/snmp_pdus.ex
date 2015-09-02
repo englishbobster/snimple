@@ -1,7 +1,13 @@
 defmodule Snimple.SnmpPdus do
 	import Snimple.BER
-	
-	def encode(some_values, :snmpget) do
+
+	def pdu_identifier do
+		%{
+			snmpget:     << 0xA0 >>
+		 }
+	end
+		
+	def encode_pdu(vblist, reqid, :snmpget) do
 		<< 11 >>
 	end
 
