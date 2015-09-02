@@ -1,7 +1,7 @@
 defmodule Snimple.SnmpPdus do
 	import Snimple.BER
 	
-	def make_snmp_get() do
+	def encode(some_values, :snmpget) do
 		<< 11 >>
 	end
 
@@ -9,8 +9,11 @@ defmodule Snimple.SnmpPdus do
 		ber_encode(oid, :oid) <> value |> ber_encode(:sequence)
 	end
 
-	def var_bind_list(map_oids_to_values) do
-		map_oids_to_values
+	def var_bind_list(tuple_list) do
+		tuple_list
+		|> Enum.map(fn {oid, value} -> var_bind(value, oid) end)
+		|> Enum.join
+		|> ber_encode(:sequence)
 	end
 		
 end
