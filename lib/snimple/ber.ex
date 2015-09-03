@@ -1,6 +1,6 @@
 defmodule Snimple.BER do
 
-	import Bitwise, only: [&&&: 2, |||: 2, >>>: 2]
+	use Bitwise
 
 	def type_identifier do
 		%{
@@ -29,10 +29,6 @@ defmodule Snimple.BER do
 		value
 	end
 
-	def ber_encode(:null) do
-		Dict.get(type_identifier, :null) <> << byte_size(<<>>) >>
-	end
-
 	def ber_encode(oid_string, :oid) do
 		oid_nodes = oid_string |> String.strip(?.)
 		|> String.split(".") |> Enum.map(fn nr -> String.to_integer(nr) end)
@@ -40,6 +36,10 @@ defmodule Snimple.BER do
 		oid = oid_tail |> Enum.map(fn oid_node -> encode_oid_node(oid_node) end) |> Enum.join
 		Dict.get(type_identifier, :oid) <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
  	end
+
+	def ber_encode(:null) do
+		Dict.get(type_identifier, :null) <> << byte_size(<<>>) >>
+	end
 
 	def encode_oid_node(node) when node <= 127 do
 		<<node>>
