@@ -8,7 +8,8 @@ defmodule Snimple.SnmpPdus do
 	end
 
 	def encode_pdu(vblist, reqid, :snmpget) do
-		<< 11 >>
+		body = request_id(reqid) <> error_status(0) <> error_index(0) <> var_bind_list(vblist)
+		Dict.get(pdu_identifier, :snmpget) <> << byte_size(body) >>  <> body
 	end
 
 	def var_bind(value, oid) do

@@ -5,7 +5,8 @@ defmodule SNMPGetTest do
 	import Snimple.BER
 
 	defp example_message do
-		{:ok, pkt} = Base.decode16("303102010104067075626c6963a02402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
+		#303102010104067075626c6963
+		{:ok, pkt} = Base.decode16("a02402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
 		pkt
 	end
 
@@ -18,8 +19,8 @@ defmodule SNMPGetTest do
 		]
 	end
 
-	test "should be able to construct an snmp get message" do
-		assert encode(16, :snmpget) == example_message
+	test "should be able to construct an snmpget pdu" do
+		assert encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpget) == example_message
 	end
 
 	test "should be able to make a variable binding" do

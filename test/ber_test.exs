@@ -10,6 +10,7 @@ defmodule BERTest do
 	test "should be able to encode an integer32 according to BER_ENCODE" do
 		assert ber_encode(8, :int32) == << 2, 1, 8 >>
 		assert ber_encode(256, :int32) == << 2, 2, 1, 0 >>
+		assert ber_encode(2138176743, :int32) == << 2, 4, 127, 113, 252, 231 >>
 	end
 
 	test "should be able to encode null value according to BER_ENCODE" do
