@@ -15,9 +15,9 @@ defmodule SNMPGetTest do
 			{ "1.3.6.1.4.1.2680.1.2.7.3.2.1", ber_encode("octetstring", :octetstring) },
 			{ "1.3.0.1.4.1.2680.1.2.7.3.2.19865.0", ber_encode(:null) },
 			{".1.3.6.1.4.1.8708.2.4.2.2.1.1.72.1667", ber_encode(10557, :int32) }
-		]	
+		]
 	end
-	
+
 	test "should be able to construct an snmp get message" do
 		assert encode(16, :snmpget) == example_message
 	end
@@ -33,5 +33,5 @@ defmodule SNMPGetTest do
 		vblist = test_varbind_list |> var_bind_list()
 		assert byte_size(vblist) == 96 + 2
 	end
-			
+
 end

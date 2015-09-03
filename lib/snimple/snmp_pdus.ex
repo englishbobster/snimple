@@ -6,7 +6,7 @@ defmodule Snimple.SnmpPdus do
 			snmpget:     << 0xA0 >>
 		 }
 	end
-		
+
 	def encode_pdu(vblist, reqid, :snmpget) do
 		<< 11 >>
 	end
@@ -21,5 +21,5 @@ defmodule Snimple.SnmpPdus do
 		|> Enum.join
 		|> ber_encode(:sequence)
 	end
-		
+
 end

@@ -15,7 +15,7 @@ defmodule Snimple.BER do
 	def ber_encode(seq, :sequence) when is_binary(seq) do
 		Dict.get(type_identifier, :sequence) <> << byte_size(seq) >> <> seq
 	end
-		
+
 	def ber_encode(value, :int32) when is_integer(value) do
 		value_as_bin = :binary.encode_unsigned(value)
 		Dict.get(type_identifier, :int32) <>
@@ -54,7 +54,7 @@ defmodule Snimple.BER do
 	end
 	defp _encode(value, current, remaining_bits) do
 		val = Bitwise.&&&(value, 0x7F) |> Bitwise.|||(0x80)
-		_encode(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7) 
+		_encode(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7)
 	end
 
 	def nr_of_bits(value) do
@@ -62,6 +62,3 @@ defmodule Snimple.BER do
 	end
 
 end
-
-
-
