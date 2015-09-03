@@ -22,4 +22,8 @@ defmodule Snimple.SnmpPdus do
 		|> ber_encode(:sequence)
 	end
 
+	def request_id(id), do: ber_encode(id, :int32)
+	def error_status(status), do: ber_encode(status, :int32)
+	def error_index(index), do: ber_encode(index, :int32)
+
 end
