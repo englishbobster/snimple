@@ -3,7 +3,8 @@ defmodule Snimple.SnmpPdus do
 
 	def pdu_identifier do
 		%{
-			snmpget:     << 0xA0 >>
+			snmpget:     << 0x00 >>,
+			smpgetnext:  << 0x01>>
 		 }
 	end
 
