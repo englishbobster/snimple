@@ -11,14 +11,13 @@ defmodule SNMPGetTest do
 	end
 
 	defp example_snmpgetnext_message do
-		#303102010104067075626c6963
-		{:ok, pkt} = Base.decode16("01", [case: :lower])
+		{:ok, pkt} = Base.decode16("012302045f79337f02010002010030153013060f2b06010401c40402010202010103150500", [case: :lower])
 		pkt
 	end
 
 	defp example_snmpset_message do
 		#303102010104067075626c6963
-		{:ok, pkt} = Base.decode16("03", [case: :lower])
+		{:ok, pkt} = Base.decode16("032102042cabc38d0201000201003013301106082b060102010106000405736f757468", [case: :lower])
 		pkt
 	end
 
@@ -32,19 +31,19 @@ defmodule SNMPGetTest do
 	end
 
 	test "should be able to construct an snmpget pdu" do
-		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpget)
+		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253", ber_encode(:null)}], 2138176743, :snmpget)
 		assert encoded_pdu == example_snmpget_message
 		assert_correct_pdu_identifier(encoded_pdu, :snmpget)
 	end
 
 	test "should be able to construct an snmpgetnext pdu" do
-		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpgetnext)
+		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.21", ber_encode(:null)}], 1601778559, :snmpgetnext)
 		assert encoded_pdu == example_snmpgetnext_message
 		assert_correct_pdu_identifier(encoded_pdu, :snmpgetnext)
 	end
 
-	test "should be able to construct an snmpet pdu" do
-		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpset)
+	test "should be able to construct an snmpset pdu" do
+		encoded_pdu = encode_pdu([{".1.3.6.1.2.1.1.6.0", ber_encode("south", :octetstring)}], 749454221, :snmpset)
 		assert encoded_pdu == example_snmpset_message
 		assert_correct_pdu_identifier(encoded_pdu, :snmpset)
 	end
