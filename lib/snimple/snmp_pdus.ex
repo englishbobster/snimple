@@ -3,9 +3,11 @@ defmodule Snimple.SnmpPdus do
 
 	def pdu_identifier do
 		%{
-			snmpget:      << 0x00 >>,
-			snmpgetnext:  << 0x01 >>,
-			snmpset:      << 0x03 >>
+			snmpget:         << 0x00 >>,
+			snmpgetnext:     << 0x01 >>,
+			snmpresponse:    << 0x02 >>,
+			snmpset:         << 0x03 >>,
+			snmptrap:        << 0x04 >>
 		 }
 	end
 
