@@ -16,6 +16,12 @@ defmodule SNMPGetTest do
 		pkt
 	end
 
+	defp example_snmpset_message do
+		#303102010104067075626c6963
+		{:ok, pkt} = Base.decode16("03", [case: :lower])
+		pkt
+	end
+
 	defp test_varbind_list do
 		[
 			{ "1.3.6.1.4.1.2680.1.2.7.3.2.0", ber_encode(100, :int32) },
@@ -35,6 +41,12 @@ defmodule SNMPGetTest do
 		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpgetnext)
 		assert encoded_pdu == example_snmpgetnext_message
 		assert_correct_pdu_identifier(encoded_pdu, :snmpgetnext)
+	end
+
+	test "should be able to construct an snmpet pdu" do
+		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpset)
+		assert encoded_pdu == example_snmpset_message
+		assert_correct_pdu_identifier(encoded_pdu, :snmpset)
 	end
 
 	test "should be able to make a variable binding" do
