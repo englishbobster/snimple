@@ -3,14 +3,18 @@ defmodule Snimple.SnmpPdus do
 
 	def pdu_identifier do
 		%{
-			snmpget:     << 0x00 >>,
-			smpgetnext:  << 0x01>>
+			snmpget:      << 0x00 >>,
+			snmpgetnext:  << 0x01>>
 		 }
 	end
 
 	def encode_pdu(vblist, reqid, :snmpget) do
 		body = request_id(reqid) <> error_status(0) <> error_index(0) <> var_bind_list(vblist)
 		Dict.get(pdu_identifier, :snmpget) <> << byte_size(body) >>  <> body
+	end
+	def encode_pdu(vblist, reqid, :snmpgetnext) do
+		body = request_id(reqid) <> error_status(0) <> error_index(0) <> var_bind_list(vblist)
+		Dict.get(pdu_identifier, :snmpgetnext) <> << byte_size(body) >>  <> body
 	end
 
 	def var_bind(value, oid) do

@@ -4,9 +4,15 @@ defmodule SNMPGetTest do
 	import Snimple.SnmpPdus
 	import Snimple.BER
 
-	defp example_message do
+	defp example_snmpget_message do
 		#303102010104067075626c6963
-		{:ok, pkt} = Base.decode16("a02402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
+		{:ok, pkt} = Base.decode16("002402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
+		pkt
+	end
+
+	defp example_snmpgetnext_message do
+		#303102010104067075626c6963
+		{:ok, pkt} = Base.decode16("01", [case: :lower])
 		pkt
 	end
 
@@ -20,7 +26,15 @@ defmodule SNMPGetTest do
 	end
 
 	test "should be able to construct an snmpget pdu" do
-		assert encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpget) == example_message
+		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpget)
+		assert encoded_pdu == example_snmpget_message
+		assert_correct_pdu_identifier(encoded_pdu, :snmpget)
+	end
+
+	test "should be able to construct an snmpgetnext pdu" do
+		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253",ber_encode(:null)}], 2138176743, :snmpgetnext)
+		assert encoded_pdu == example_snmpgetnext_message
+		assert_correct_pdu_identifier(encoded_pdu, :snmpgetnext)
 	end
 
 	test "should be able to make a variable binding" do
@@ -33,6 +47,11 @@ defmodule SNMPGetTest do
 	test "should be able to make a list of variable bindings" do
 		vblist = test_varbind_list |> var_bind_list()
 		assert byte_size(vblist) == 96 + 2
+	end
+
+	defp assert_correct_pdu_identifier(pdu, identifier) do
+		[h|_] = :erlang.binary_to_list(pdu)
+		assert <<h>> == Dict.get(Snimple.SnmpPdus.pdu_identifier, identifier)
 	end
 
 end
