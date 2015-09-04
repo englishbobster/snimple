@@ -11,10 +11,10 @@ defmodule Snimple.SnmpPdus do
 		 }
 	end
 
-	def encode_pdu(vblist, requid, :snmpget),  do: _encode_pdu_get(vblist, requid, :snmpget)
-	def encode_pdu(vblist, requid, :snmpgetnext),  do: _encode_pdu_get(vblist, requid, :snmpgetnext)
-	def encode_pdu(vblist, requid, :snmpset),  do: _encode_pdu_get(vblist, requid, :snmpset)
-	defp _encode_pdu_get(vblist, requid, type) do
+	def encode_pdu(vblist, requid, :snmpget),      do: _encode_pdu(vblist, requid, :snmpget)
+	def encode_pdu(vblist, requid, :snmpgetnext),  do: _encode_pdu(vblist, requid, :snmpgetnext)
+	def encode_pdu(vblist, requid, :snmpset),      do: _encode_pdu(vblist, requid, :snmpset)
+	defp _encode_pdu(vblist, requid, type) do
 		body = request_id(requid) <> error_status(0) <> error_index(0) <> var_bind_list(vblist)
 		Dict.get(pdu_identifier, type) <> << byte_size(body) >>  <> body
 	end
