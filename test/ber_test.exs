@@ -3,6 +3,26 @@ defmodule BERTest do
 
 	import Snimple.BER
 
+	defp test_oids do
+	%{
+		oid_1: {".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16",    << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >> },       #an oid
+		oid_2: {".1.3.6.1.4.1.8708.2.4.2.2.1.1.72.1667", << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 2, 1, 1, 72, 141, 3 >> },  #greater than 127 at the end
+		oid_3: {".1.3.6.1.4.1.8708.2.4.2.0.1.1.72.1667", << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 0, 1, 1, 72, 141, 3 >> },  #zero somewhere in the middle
+		oid_4: {".1.3.6.1.4.1.19865.1.2.1.6.0",          <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>> },             #zero at the end
+		oid_5: {"1.3.6.1.4.1.19865.1.2.1.6.0",           <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>> },             #no . as start
+		oid_6: {"1.3.0.1.4.1.2680.1.2.7.3.2.19865.0",	   <<6, 16, 43, 0, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 129, 155, 25, 0 >> }#unholy combo
+	}
+	end
+
+	defp test_oid_str(oid) do
+		{str, _} = Dict.get(test_oids, oid)
+		str
+	end
+	defp test_oid_bin(oid) do
+		{_, bin} = Dict.get(test_oids, oid)
+		bin
+	end
+		
 	defp test_string do
 		"a test octet string"
 	end
@@ -13,28 +33,39 @@ defmodule BERTest do
 		assert ber_encode(2138176743, :int32) == << 2, 4, 127, 113, 252, 231 >>
 	end
 
+	test "should be able to decode a binary to integer" do
+		assert ber_decode(<< 127, 113, 252, 231 >>, :int32) == 2138176743
+	end
+	
 	test "should be able to encode null value according to BER_ENCODE" do
 		assert ber_encode(:null) == << 5, 0 >>
 	end
 
 	test "should be able to encode an octetstring according to BER_ENCODE" do
 		test_string_size = byte_size(test_string)
-		assert ber_encode(test_string, :octetstring) == << 4 >> <> <<test_string_size>> <> test_string
+		assert ber_encode(test_string, :octetstring) == << 4 >> <> << test_string_size >> <> test_string
 	end
 
-	test "should be able to encode assorted OIDs according to BER_ENCODE" do
-		oid_1 = ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16"       #an oid
-		oid_2 = ".1.3.6.1.4.1.8708.2.4.2.2.1.1.72.1667"    #greater than 127 at the end
-		oid_3 = ".1.3.6.1.4.1.8708.2.4.2.0.1.1.72.1667"    #zero somewhere in the middle
-		oid_4 = ".1.3.6.1.4.1.19865.1.2.1.6.0"             #zero at the end
-		oid_5 = "1.3.6.1.4.1.19865.1.2.1.6.0"              #no . as start
-		oid_6 = "1.3.0.1.4.1.2680.1.2.7.3.2.19865.0"       #unholy combo
-		assert ber_encode(oid_1, :oid) == << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >>
-		assert ber_encode(oid_2, :oid) == << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 2, 1, 1, 72, 141, 3 >>
-		assert ber_encode(oid_3, :oid) == << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 0, 1, 1, 72, 141, 3 >>
-		assert ber_encode(oid_4, :oid) == <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>>
-		assert ber_encode(oid_5, :oid) == <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>>
-		assert ber_encode(oid_6, :oid) == <<6, 16, 43, 0, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 129, 155, 25, 0 >>
+	test "should be able to decode a binary to an octet string" do
+		assert ber_decode("this should be a string", :octetstring) == "this should be a string"
+	end
+
+	test "should be able to encode assorted OIDs accordingly" do
+		assert ber_encode(test_oid_str(:oid_1), :oid) == test_oid_bin(:oid_1) 
+		assert ber_encode(test_oid_str(:oid_2), :oid) == test_oid_bin(:oid_2)
+		assert ber_encode(test_oid_str(:oid_3), :oid) == test_oid_bin(:oid_3)
+		assert ber_encode(test_oid_str(:oid_4), :oid) == test_oid_bin(:oid_4)
+		assert ber_encode(test_oid_str(:oid_5), :oid) == test_oid_bin(:oid_5)
+		assert ber_encode(test_oid_str(:oid_6), :oid) == test_oid_bin(:oid_6)
+	end
+
+	test "should be able to decode assorted OIDs accordingly" do
+		assert ber_decode(test_oid_bin(:oid_1), :oid) == test_oid_str(:oid_1) 
+		assert ber_decode(test_oid_bin(:oid_2), :oid) == test_oid_str(:oid_2)
+		assert ber_decode(test_oid_bin(:oid_3), :oid) == test_oid_str(:oid_3)
+		assert ber_decode(test_oid_bin(:oid_4), :oid) == test_oid_str(:oid_4)
+		assert ber_decode(test_oid_bin(:oid_5), :oid) == test_oid_str(:oid_5)
+		assert ber_decode(test_oid_bin(:oid_6), :oid) == test_oid_str(:oid_6)
 	end
 
 	test "should encode an oid node less than 128" do

@@ -12,6 +12,18 @@ defmodule Snimple.BER do
 		 }
 	end
 
+	def ber_decode(binary, :int32) do
+		:binary.decode_unsigned(binary)
+	end
+
+	def ber_decode(binary, :octetstring) do
+		binary
+	end
+
+	def ber_decode(binary, :oid) do
+		".1.1.1.1."
+	end
+
 	def ber_encode(seq, :sequence) when is_binary(seq) do
 		Dict.get(type_identifier, :sequence) <> << byte_size(seq) >> <> seq
 	end
@@ -25,8 +37,7 @@ defmodule Snimple.BER do
 
 	def ber_encode(value, :octetstring) when is_binary(value) do
 		Dict.get(type_identifier, :octetstring) <>
-	  << byte_size(value) >> <>
-		value
+	  << byte_size(value) >> <> value
 	end
 
 	def ber_encode(oid_string, :oid) do
@@ -42,7 +53,7 @@ defmodule Snimple.BER do
 	end
 
 	def encode_oid_node(node) when node <= 127 do
-		<<node>>
+		<< node >>
 	end
 	def encode_oid_node(node) do
 		size = nr_of_bits(node)
