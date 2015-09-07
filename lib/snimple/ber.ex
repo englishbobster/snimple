@@ -21,7 +21,7 @@ defmodule Snimple.BER do
 	end
 
 	def ber_decode(binary, :oid) do
-		".1.1.1.1."
+		:binary.bin_to_list(binary)
 	end
 
 	def ber_encode(seq, :sequence) when is_binary(seq) do
