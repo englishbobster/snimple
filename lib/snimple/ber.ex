@@ -21,8 +21,15 @@ defmodule Snimple.BER do
 	end
 
 	def ber_decode(binary, :oid) do
-		:binary.bin_to_list(binary)
+		:binary.bin_to_list(binary) |> _first_byte
 	end
+	defp _first_byte([h|t]) do
+		[1, h - 40 | t ]
+	end
+	def _decode(list) do
+		0
+	end
+
 
 	def ber_encode(seq, :sequence) when is_binary(seq) do
 		Dict.get(type_identifier, :sequence) <> << byte_size(seq) >> <> seq
