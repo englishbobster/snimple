@@ -78,6 +78,11 @@ defmodule BERTest do
 		assert encode_oid_node(19865) == << 0x81, 0x9B, 0x19 >>
 	end
 
+	test "should decode oids greater than or equal to 128" do
+		assert decode_oid_node(<< 0xC4, 0x04 >>) == 8708
+		assert decode_oid_node(<< 0x81, 0x9B, 0x19 >>) == 19865
+	end
+
 	test "should encode a sequence correctly" do
 		value = ber_encode(:null)
 		oid = ber_encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
