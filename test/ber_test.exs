@@ -27,45 +27,45 @@ defmodule BERTest do
 		"a test octet string"
 	end
 
-	test "should be able to encode an integer32 according to BER_ENCODE" do
+	test "should be able to encode an integer32 according to integer binary" do
 		assert ber_encode(8, :int32) == << 2, 1, 8 >>
 		assert ber_encode(256, :int32) == << 2, 2, 1, 0 >>
 		assert ber_encode(2138176743, :int32) == << 2, 4, 127, 113, 252, 231 >>
 	end
 
-	test "should be able to decode a binary to integer" do
-		assert ber_decode(<< 127, 113, 252, 231 >>, :int32) == 2138176743
+	test "should be able to decode an integer type to integer" do
+		assert ber_decode(<< 2, 4, 127, 113, 252, 231 >>) == 2138176743
 	end
 	
-	test "should be able to encode null value according to BER_ENCODE" do
+	test "should be able to encode null value" do
 		assert ber_encode(:null) == << 5, 0 >>
 	end
 
-	test "should be able to encode an octetstring according to BER_ENCODE" do
+	test "should be able to encode an octetstring" do
 		test_string_size = byte_size(test_string)
 		assert ber_encode(test_string, :octetstring) == << 4 >> <> << test_string_size >> <> test_string
 	end
 
 	test "should be able to decode a binary to an octet string" do
-		assert ber_decode("this should be a string", :octetstring) == "this should be a string"
+		assert ber_decode(<< 4, 23 >> <> "this should be a string") ==  "this should be a string"
 	end
 
 	test "should be able to encode assorted OIDs accordingly" do
-		assert ber_encode(test_oid_str(:oid_1), :oid) == test_oid_bin(:oid_1) 
-		assert ber_encode(test_oid_str(:oid_2), :oid) == test_oid_bin(:oid_2)
-		assert ber_encode(test_oid_str(:oid_3), :oid) == test_oid_bin(:oid_3)
-		assert ber_encode(test_oid_str(:oid_4), :oid) == test_oid_bin(:oid_4)
-		assert ber_encode(test_oid_str(:oid_5), :oid) == test_oid_bin(:oid_5)
-		assert ber_encode(test_oid_str(:oid_6), :oid) == test_oid_bin(:oid_6)
+		assert test_oid_str(:oid_1) |> ber_encode(:oid) == test_oid_bin(:oid_1) 
+		assert test_oid_str(:oid_2) |> ber_encode(:oid) == test_oid_bin(:oid_2)
+		assert test_oid_str(:oid_3) |> ber_encode(:oid) == test_oid_bin(:oid_3)
+		assert test_oid_str(:oid_4) |> ber_encode(:oid) == test_oid_bin(:oid_4)
+		assert test_oid_str(:oid_5) |> ber_encode(:oid) == test_oid_bin(:oid_5)
+		assert test_oid_str(:oid_6) |> ber_encode(:oid) == test_oid_bin(:oid_6)
 	end
 
 	test "should be able to decode assorted OIDs accordingly" do
-		assert ber_decode(test_oid_bin(:oid_1), :oid) == test_oid_str(:oid_1) 
-		assert ber_decode(test_oid_bin(:oid_2), :oid) == test_oid_str(:oid_2)
-		assert ber_decode(test_oid_bin(:oid_3), :oid) == test_oid_str(:oid_3)
-		assert ber_decode(test_oid_bin(:oid_4), :oid) == test_oid_str(:oid_4)
-		assert ber_decode(test_oid_bin(:oid_5), :oid) == test_oid_str(:oid_5)
-		assert ber_decode(test_oid_bin(:oid_6), :oid) == test_oid_str(:oid_6)
+		assert test_oid_bin(:oid_1) |> ber_decode() == test_oid_str(:oid_1) 
+		assert test_oid_bin(:oid_2) |> ber_decode() == test_oid_str(:oid_2)
+		assert test_oid_bin(:oid_3) |> ber_decode() == test_oid_str(:oid_3)
+		assert test_oid_bin(:oid_4) |> ber_decode() == test_oid_str(:oid_4)
+		assert test_oid_bin(:oid_5) |> ber_decode() == test_oid_str(:oid_5)
+		assert test_oid_bin(:oid_6) |> ber_decode() == test_oid_str(:oid_6)
 	end
 
 	test "should encode an oid node less than 128" do

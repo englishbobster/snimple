@@ -2,7 +2,7 @@ defmodule Snimple.BER do
 
 	use Bitwise
 
-	def type_identifier do
+	defp type_identifier do
 		%{
 			int32:       << 0x02 >>,
 		  octetstring: << 0x04 >>,
@@ -11,23 +11,23 @@ defmodule Snimple.BER do
 			sequence:    << 0x30 >>
 		 }
 	end
-
-	def ber_decode(binary, :int32) do
-		:binary.decode_unsigned(binary)
+	defp type(id) when is_atom(id) do
+		Dict.get(type_identifier, id)
 	end
-
-	def ber_decode(binary, :octetstring) do
-		binary
+		
+	def ber_decode(<< 0x02, len::integer, data::binary-size(len) >>) do
+		:binary.decode_unsigned(data)
 	end
-
-	def ber_decode(binary, :oid) do
-		:binary.bin_to_list(binary)
-		|> _first_byte
-		|> :erlang.list_to_binary |> decode_oid_node
+	def ber_decode(<< 0x04, len::integer, data::binary-size(len) >>) do
+		data
+	end
+	def ber_decode(<< 0x06, len::integer, data::binary-size(len) >>) do
+		<< head, tail::binary >> = data
 	end
 	defp _first_byte([head|tail]) do
 		[1, head - 40 | tail ]
 	end
+	
 	def decode_oid_node(bin) do
 		list = :binary.bin_to_list(bin)
 		_decode(0, list)
@@ -42,31 +42,26 @@ defmodule Snimple.BER do
 	end
 
 	def ber_encode(seq, :sequence) when is_binary(seq) do
-		Dict.get(type_identifier, :sequence) <> << byte_size(seq) >> <> seq
+		type(:sequence) <> << byte_size(seq) >> <> seq
 	end
-
 	def ber_encode(value, :int32) when is_integer(value) do
 		value_as_bin = :binary.encode_unsigned(value)
 		Dict.get(type_identifier, :int32) <>
 	  << byte_size(value_as_bin) >> <>
 		value_as_bin
 	end
-
 	def ber_encode(value, :octetstring) when is_binary(value) do
-		Dict.get(type_identifier, :octetstring) <>
-	  << byte_size(value) >> <> value
+		type(:octetstring) <> << byte_size(value) >> <> value
 	end
-
 	def ber_encode(oid_string, :oid) do
 		oid_nodes = oid_string |> String.strip(?.)
 		|> String.split(".") |> Enum.map(fn nr -> String.to_integer(nr) end)
 		{[a, b], oid_tail} = oid_nodes |> Enum.split(2)
 		oid = oid_tail |> Enum.map(fn oid_node -> encode_oid_node(oid_node) end) |> Enum.join
-		Dict.get(type_identifier, :oid) <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
+		type(:oid) <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
  	end
-
 	def ber_encode(:null) do
-		Dict.get(type_identifier, :null) <> << byte_size(<<>>) >>
+		type(:null) <> << byte_size(<<>>) >>
 	end
 
 	def encode_oid_node(node) when node <= 127 do
