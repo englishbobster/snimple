@@ -26,26 +26,25 @@ defmodule Snimple.BER do
 	defp _first_byte([head|tail]) do
 		[1, head - 40 | tail ]
 	end
-	def decode_oid_node([head|tail]) do
+	def decode_oid_node([head|tail] = list) do
 		cond do
 			head <= 127 ->
 				head
 			true ->
-				register = Bitwise.&&&(head, 0x7F) |> Bitwise.<<<(7)
-				_decode(register, tail)
+				_decode(0, list)
 		end
+	end
+	def _decode(register, [head|tail] = list) when head <= 127 and register == 0 do
+		list
+	end
+	def _decode(register, [head|tail]) when head <= 127 do
+		register = register + head
 	end
 	def _decode(register, [head|tail]) do
 		register = register + Bitwise.&&&(head, 0x7F)
 		_decode(Bitwise.<<<(register, 7), tail)
 	end
-	def _decode(register, [head|tail]) when head <= 127 do
-		register = register + head
-	end
-	def _decode(register, [head|tail] = list) when head <= 127 and register == 0 do
-		list
-	end
-				
+
 	def ber_encode(seq, :sequence) when is_binary(seq) do
 		Dict.get(type_identifier, :sequence) <> << byte_size(seq) >> <> seq
 	end
