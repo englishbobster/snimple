@@ -79,13 +79,13 @@ defmodule BERTest do
 	end
 
 	test "should decode oids less than 128" do
-		assert decode_oid_node(:binary.bin_to_list(<< 0x7F >>)) == 127
-		assert decode_oid_node(:binary.bin_to_list(<< 0x41 >>)) == 65
+		assert decode_oid_node(<< 0x7F >>) == 127
+		assert decode_oid_node(<< 0x41 >>) == 65
 	end
 
 	test "should decode oids greater than or equal to 128" do
-		assert decode_oid_node(:binary.bin_to_list(<< 0xC4, 0x04 >>)) == 8708
-		assert decode_oid_node(:binary.bin_to_list(<< 0x81, 0x9B, 0x19 >>)) == 19865
+		assert decode_oid_node(<< 0xC4, 0x04 >>) == 8708
+		assert decode_oid_node(<< 0x81, 0x9B, 0x19 >>) == 19865
 	end
 
 	test "should encode a sequence correctly" do

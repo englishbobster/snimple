@@ -21,26 +21,22 @@ defmodule Snimple.BER do
 	end
 
 	def ber_decode(binary, :oid) do
-		:binary.bin_to_list(binary) |> _first_byte |> decode_oid_node
+		:binary.bin_to_list(binary)
+		|> _first_byte
+		|> :erlang.list_to_binary |> decode_oid_node
 	end
 	defp _first_byte([head|tail]) do
 		[1, head - 40 | tail ]
 	end
-	def decode_oid_node([head|tail] = list) do
-		cond do
-			head <= 127 ->
-				head
-			true ->
-				_decode(0, list)
-		end
+	def decode_oid_node(bin) do
+		list = :binary.bin_to_list(bin)
+		_decode(0, list)
 	end
-	def _decode(register, [head|tail] = list) when head <= 127 and register == 0 do
-		list
-	end
-	def _decode(register, [head|tail]) when head <= 127 do
+	defp _decode(register, [head|tail]) when head <= 127 do
 		register = register + head
+		register
 	end
-	def _decode(register, [head|tail]) do
+	defp _decode(register, [head|tail]) do
 		register = register + Bitwise.&&&(head, 0x7F)
 		_decode(Bitwise.<<<(register, 7), tail)
 	end
