@@ -26,22 +26,29 @@ defmodule Snimple.BER do
 	end
 	def ber_decode(<< 0x06, len::integer, data::binary-size(len) >>) do
 		<< head, tail::binary >> = data
-	end
-	defp _first_byte([head|tail]) do
-		[1, head - 40 | tail ]
+		first_byte = [1, head - 40 ]
+		rest = decode_oid_node(tail)
+		first_byte ++ rest
 	end
 
 	def decode_oid_node(bin) do
 		list = :binary.bin_to_list(bin)
-		_decode(0, list)
+		_decode(0, list, [])
 	end
-	defp _decode(register, [head|tail]) when head <= 127 do
+	defp _decode(register, [], target) do
+		target
+	end
+	defp _decode(register, [head|tail], target) when head <= 127 do
 		register = register + head
-		register
+		_decode(0, tail, target ++ [register])
 	end
-	defp _decode(register, [head|tail]) do
+	defp _decode(register, [head|tail] = list, target) when head <= 127 and register == 0 do
+		target ++ head
+		_decode(register, list, target)
+	end
+	defp _decode(register, [head|tail], target) do
 		register = register + Bitwise.&&&(head, 0x7F)
-		_decode(Bitwise.<<<(register, 7), tail)
+		_decode(Bitwise.<<<(register, 7), tail, target)
 	end
 
 	def ber_encode(seq, :sequence) when is_binary(seq) do
