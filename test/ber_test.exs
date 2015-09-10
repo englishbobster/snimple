@@ -22,7 +22,7 @@ defmodule BERTest do
 		{_, bin} = Dict.get(test_oids, oid)
 		bin
 	end
-		
+
 	defp test_string do
 		"a test octet string"
 	end
@@ -36,9 +36,13 @@ defmodule BERTest do
 	test "should be able to decode an integer type to integer" do
 		assert ber_decode(<< 2, 4, 127, 113, 252, 231 >>) == 2138176743
 	end
-	
+
 	test "should be able to encode null value" do
 		assert ber_encode(:null) == << 5, 0 >>
+	end
+
+	test "should be able to decode null value" do
+		assert ber_decode(<< 5, 0 >>) == :null
 	end
 
 	test "should be able to encode an octetstring" do
@@ -51,7 +55,7 @@ defmodule BERTest do
 	end
 
 	test "should be able to encode assorted OIDs accordingly" do
-		assert test_oid_str(:oid_1) |> ber_encode(:oid) == test_oid_bin(:oid_1) 
+		assert test_oid_str(:oid_1) |> ber_encode(:oid) == test_oid_bin(:oid_1)
 		assert test_oid_str(:oid_2) |> ber_encode(:oid) == test_oid_bin(:oid_2)
 		assert test_oid_str(:oid_3) |> ber_encode(:oid) == test_oid_bin(:oid_3)
 		assert test_oid_str(:oid_4) |> ber_encode(:oid) == test_oid_bin(:oid_4)
@@ -60,7 +64,7 @@ defmodule BERTest do
 	end
 
 	test "should be able to decode assorted OIDs accordingly" do
-		assert test_oid_bin(:oid_1) |> ber_decode() == test_oid_str(:oid_1) 
+		assert test_oid_bin(:oid_1) |> ber_decode() == test_oid_str(:oid_1)
 		assert test_oid_bin(:oid_2) |> ber_decode() == test_oid_str(:oid_2)
 		assert test_oid_bin(:oid_3) |> ber_decode() == test_oid_str(:oid_3)
 		assert test_oid_bin(:oid_4) |> ber_decode() == test_oid_str(:oid_4)

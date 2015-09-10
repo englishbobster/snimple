@@ -14,12 +14,15 @@ defmodule Snimple.BER do
 	defp type(id) when is_atom(id) do
 		Dict.get(type_identifier, id)
 	end
-		
+
 	def ber_decode(<< 0x02, len::integer, data::binary-size(len) >>) do
 		:binary.decode_unsigned(data)
 	end
 	def ber_decode(<< 0x04, len::integer, data::binary-size(len) >>) do
 		data
+	end
+	def ber_decode(<< 0x05, len::integer, data::binary-size(len) >>) do
+		:null
 	end
 	def ber_decode(<< 0x06, len::integer, data::binary-size(len) >>) do
 		<< head, tail::binary >> = data
@@ -27,7 +30,7 @@ defmodule Snimple.BER do
 	defp _first_byte([head|tail]) do
 		[1, head - 40 | tail ]
 	end
-	
+
 	def decode_oid_node(bin) do
 		list = :binary.bin_to_list(bin)
 		_decode(0, list)
