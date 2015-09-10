@@ -68,8 +68,8 @@ defmodule BERTest do
 		assert test_oid_bin(:oid_2) |> ber_decode() == test_oid_str(:oid_2)
 		assert test_oid_bin(:oid_3) |> ber_decode() == test_oid_str(:oid_3)
 		assert test_oid_bin(:oid_4) |> ber_decode() == test_oid_str(:oid_4)
-		assert test_oid_bin(:oid_5) |> ber_decode() == test_oid_str(:oid_5)
-		assert test_oid_bin(:oid_6) |> ber_decode() == test_oid_str(:oid_6)
+		assert test_oid_bin(:oid_5) |> ber_decode() == "." <> test_oid_str(:oid_5)
+		assert test_oid_bin(:oid_6) |> ber_decode() == "." <> test_oid_str(:oid_6)
 	end
 
 	test "should encode an oid node less than 128" do
@@ -83,13 +83,13 @@ defmodule BERTest do
 	end
 
 	test "should decode oids less than 128" do
-		assert decode_oid_node(<< 0x7F >>) == 127
-		assert decode_oid_node(<< 0x41 >>) == 65
+		assert decode_oid_node(<< 0x7F >>) == [127]
+		assert decode_oid_node(<< 0x41 >>) == [65]
 	end
 
 	test "should decode oids greater than or equal to 128" do
-		assert decode_oid_node(<< 0xC4, 0x04 >>) == 8708
-		assert decode_oid_node(<< 0x81, 0x9B, 0x19 >>) == 19865
+		assert decode_oid_node(<< 0xC4, 0x04 >>) == [8708]
+		assert decode_oid_node(<< 0x81, 0x9B, 0x19 >>) == [19865]
 	end
 
 	test "should encode a sequence correctly" do
