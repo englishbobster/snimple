@@ -98,6 +98,12 @@ defmodule BERTest do
 		assert ber_encode(oid <> value, :sequence) ==  << 48, 19 >> <>  << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >> <> << 5, 0 >>
 	end
 
+	test "should decode a sequence correctly" do
+		value = ber_encode(:null)
+		oid = ber_encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
+		assert ber_decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>) == <<6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>
+	end
+	
 	test "nr_of_bits should return correct value for some inputs" do
 		assert nr_of_bits(19865) == 15
 		assert nr_of_bits(841557) == 20

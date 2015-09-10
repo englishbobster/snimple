@@ -15,6 +15,9 @@ defmodule Snimple.BER do
 		Dict.get(type_identifier, id)
 	end
 
+	def ber_decode(<< 0x30, len::integer, data::binary-size(len) >>) do
+		data
+	end
 	def ber_decode(<< 0x02, len::integer, data::binary-size(len) >>) do
 		:binary.decode_unsigned(data)
 	end
@@ -30,7 +33,6 @@ defmodule Snimple.BER do
 		result = first_byte ++ decode_oid_node(tail) |> Enum.join(".")
 		"." <> result
 	end
-
 	def decode_oid_node(bin) do
 		list = :binary.bin_to_list(bin)
 		_decode(0, list, [])
@@ -69,7 +71,6 @@ defmodule Snimple.BER do
 	def ber_encode(:null) do
 		type(:null) <> << byte_size(<<>>) >>
 	end
-
 	def encode_oid_node(node) when node <= 127 do
 		<< node >>
 	end
