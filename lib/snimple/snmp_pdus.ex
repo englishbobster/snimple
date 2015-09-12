@@ -3,11 +3,11 @@ defmodule Snimple.SnmpPdus do
 
 	def pdu_identifier do
 		%{
-			snmpget:         << 0x00 >>,
-			snmpgetnext:     << 0x01 >>,
-			snmpresponse:    << 0x02 >>,
-			snmpset:         << 0x03 >>,
-			snmptrap:        << 0x04 >>
+			snmpget:         0x00,
+			snmpgetnext:     0x01,
+			snmpresponse:    0x02,
+			snmpset:         0x03,
+			snmptrap:        0x04
 		 }
 	end
 	def pdu_id(id) do
@@ -16,25 +16,25 @@ defmodule Snimple.SnmpPdus do
 	
 	def error_status do
 		%{
-			noError:              <<0x00>>,
-			tooBig:               <<0x01>>,
-			noSuchName:           <<0x02>>,
-			badValue:             <<0x03>>,
-			readOnly:             <<0x04>>,
-			genErr:               <<0x05>>,
-			noAccess:             <<0x06>>,
-			wrongType:            <<0x07>>,
-			wrongLength:          <<0x08>>,
-			wrongEncoding:        <<0x09>>,
-			wrongValue:           <<0x0A>>,
-			noCreation:           <<0x0B>>,
-			inconsistentValue:    <<0x0C>>,
-			resourceUnavailable:  <<0x0D>>,
-			commitFailed:         <<0x0E>>,
-			undoFailed:           <<0x0F>>,
-			authorizationError:   <<0x10>>,
-			notWritable:          <<0x11>>,
-			inconsistentName:     <<0x12>>
+			noError:              0x00,
+			tooBig:               0x01,
+			noSuchName:           0x02,
+			badValue:             0x03,
+			readOnly:             0x04,
+			genErr:               0x05,
+			noAccess:             0x06,
+			wrongType:            0x07,
+			wrongLength:          0x08,
+			wrongEncoding:        0x09,
+			wrongValue:           0x0A,
+			noCreation:           0x0B,
+			inconsistentValue:    0x0C,
+			resourceUnavailable:  0x0D,
+			commitFailed:         0x0E,
+			undoFailed:           0x0F,
+			authorizationError:   0x10,
+			notWritable:          0x11,
+			inconsistentName:     0x12
 		}
 	end
 	def error(status) do
@@ -42,23 +42,23 @@ defmodule Snimple.SnmpPdus do
 	end
 		
 	def encode_pdu(vblist, requid, :snmpget) do
-	_encode_pdu(vblist, requid, 0, 0, :snmpget)
+	_encode_pdu(vblist, requid, error(:noError), 0, :snmpget)
 	end
-	def encode_pdu(vblist, requid, error_status, error_index, :snmpresponse) do
-		_encode_pdu(vblist, requid, error_status, error_index, :snmpresponse)
+	def encode_pdu(vblist, requid, errst, errin, :snmpresponse) do
+		_encode_pdu(vblist, requid, errst, errin, :snmpresponse)
 	end
 	def encode_pdu(vblist, requid, :snmpgetnext)do
-		_encode_pdu(vblist, requid, 0, 0, :snmpgetnext)
+		_encode_pdu(vblist, requid, error(:noError), 0, :snmpgetnext)
 	end
 	def encode_pdu(vblist, requid, :snmpset)do
-		_encode_pdu(vblist, requid, 0, 0, :snmpset)
+		_encode_pdu(vblist, requid, error(:noError), 0, :snmpset)
 	end
 	defp _encode_pdu(vblist, requid, errst, errin, type) do
 		body = request_id(requid)
 		<> error_status(errst)
 		<> error_index(errin)
 		<> var_bind_list(vblist)
-		pdu_id(type) <> << byte_size(body) >>  <> body
+		<< pdu_id(type) >> <> << byte_size(body) >>  <> body
 	end
 	
 	def var_bind(value, oid) do

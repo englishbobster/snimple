@@ -71,7 +71,7 @@ defmodule SNMPGetTest do
 
 	defp assert_correct_pdu_identifier(pdu, identifier) do
 		[h|_] = :erlang.binary_to_list(pdu)
-		assert <<h>> == Dict.get(Snimple.SnmpPdus.pdu_identifier, identifier)
+		assert h == Snimple.SnmpPdus.pdu_id(identifier)
 	end
 
 end

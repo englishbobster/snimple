@@ -1,14 +1,13 @@
 defmodule Snimple.BER do
-
 	use Bitwise
 
 	defp type_identifier do
 		%{
-			int32:       << 0x02 >>,
-		  octetstring: << 0x04 >>,
-		  null:        << 0x05 >>,
-		  oid:         << 0x06 >>,
-			sequence:    << 0x30 >>
+			int32:       0x02,
+		  octetstring: 0x04,
+		  null:        0x05,
+		  oid:         0x06,
+			sequence:    0x30
 		 }
 	end
 	defp type(id) when is_atom(id) do
@@ -50,26 +49,30 @@ defmodule Snimple.BER do
 	end
 
 	def ber_encode(seq, :sequence) when is_binary(seq) do
-		type(:sequence) <> << byte_size(seq) >> <> seq
+		<< type(:sequence) >> <> << byte_size(seq) >> <> seq
 	end
 	def ber_encode(value, :int32) when is_integer(value) do
 		value_as_bin = :binary.encode_unsigned(value)
-		Dict.get(type_identifier, :int32) <>
+		<< type(:int32) >> <>
 	  << byte_size(value_as_bin) >> <>
 		value_as_bin
 	end
 	def ber_encode(value, :octetstring) when is_binary(value) do
-		type(:octetstring) <> << byte_size(value) >> <> value
+		<< type(:octetstring) >> <> << byte_size(value) >> <> value
 	end
 	def ber_encode(oid_string, :oid) do
 		oid_nodes = oid_string |> String.strip(?.)
-		|> String.split(".") |> Enum.map(fn nr -> String.to_integer(nr) end)
-		{[a, b], oid_tail} = oid_nodes |> Enum.split(2)
-		oid = oid_tail |> Enum.map(fn oid_node -> encode_oid_node(oid_node) end) |> Enum.join
-		type(:oid) <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
+		|> String.split(".")
+		|> Enum.map(fn nr -> String.to_integer(nr) end)
+		{[a, b], oid_tail} = oid_nodes
+		|> Enum.split(2)
+		oid = oid_tail
+		|> Enum.map(fn oid_node -> encode_oid_node(oid_node) end)
+		|> Enum.join
+		<< type(:oid) >> <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
  	end
 	def ber_encode(:null) do
-		type(:null) <> << byte_size(<<>>) >>
+		<< type(:null) >> <> << byte_size(<<>>) >>
 	end
 	def encode_oid_node(node) when node <= 127 do
 		<< node >>
