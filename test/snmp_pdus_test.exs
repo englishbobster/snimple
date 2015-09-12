@@ -4,19 +4,22 @@ defmodule SNMPGetTest do
 	import Snimple.SnmpPdus
 	import Snimple.BER
 
-	defp example_snmpget_message do
-		#303102010104067075626c6963
+	defp example_snmpget_pdu do
 		{:ok, pkt} = Base.decode16("002402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
 		pkt
 	end
 
-	defp example_snmpgetnext_message do
+	defp example_snmpgetresponse_pdu do
+		{:ok, pkt} = Base.decode16("022502047f71fce70201000201003017301506102b06010401c40402030204010104817d020108", [case: :lower])
+		pkt
+	end
+	
+	defp example_snmpgetnext_pdu do
 		{:ok, pkt} = Base.decode16("012302045f79337f02010002010030153013060f2b06010401c40402010202010103150500", [case: :lower])
 		pkt
 	end
 
-	defp example_snmpset_message do
-		#303102010104067075626c6963
+	defp example_snmpset_pdu do
 		{:ok, pkt} = Base.decode16("032102042cabc38d0201000201003013301106082b060102010106000405736f757468", [case: :lower])
 		pkt
 	end
@@ -32,19 +35,25 @@ defmodule SNMPGetTest do
 
 	test "should be able to construct an snmpget pdu" do
 		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253", ber_encode(:null)}], 2138176743, :snmpget)
-		assert encoded_pdu == example_snmpget_message
+		assert encoded_pdu == example_snmpget_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmpget)
+	end
+
+	test "should be able to construct an snmpresponse pdu" do
+		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253", ber_encode(8, :int32)}], 2138176743, 0, 0, :snmpresponse)
+		assert encode_pdu = example_snmpgetresponse_pdu
+		assert_correct_pdu_identifier(encoded_pdu, :snmpresponse)
 	end
 
 	test "should be able to construct an snmpgetnext pdu" do
 		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.21", ber_encode(:null)}], 1601778559, :snmpgetnext)
-		assert encoded_pdu == example_snmpgetnext_message
+		assert encoded_pdu == example_snmpgetnext_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmpgetnext)
 	end
 
 	test "should be able to construct an snmpset pdu" do
 		encoded_pdu = encode_pdu([{".1.3.6.1.2.1.1.6.0", ber_encode("south", :octetstring)}], 749454221, :snmpset)
-		assert encoded_pdu == example_snmpset_message
+		assert encoded_pdu == example_snmpset_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmpset)
 	end
 
