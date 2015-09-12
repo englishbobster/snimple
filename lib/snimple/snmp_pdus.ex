@@ -10,7 +10,10 @@ defmodule Snimple.SnmpPdus do
 			snmptrap:        << 0x04 >>
 		 }
 	end
-
+	def pdu_id(id) do
+		Dict.get(pdu_identifier, id)
+	end
+	
 	def error_status do
 		%{
 			noError:              <<0x00>>,
@@ -34,16 +37,28 @@ defmodule Snimple.SnmpPdus do
 			inconsistentName:     <<0x12>>
 		}
 	end
-	
-	def encode_pdu(vblist, requid, :snmpget),      do: _encode_pdu(vblist, requid, 0, 0, :snmpget)
+	def error(status) do
+		Dict.get(error_status, status)
+	end
+		
+	def encode_pdu(vblist, requid, :snmpget) do
+	_encode_pdu(vblist, requid, 0, 0, :snmpget)
+	end
 	def encode_pdu(vblist, requid, error_status, error_index, :snmpresponse) do
 		_encode_pdu(vblist, requid, error_status, error_index, :snmpresponse)
 	end
-	def encode_pdu(vblist, requid, :snmpgetnext),  do: _encode_pdu(vblist, requid, 0, 0, :snmpgetnext)
-	def encode_pdu(vblist, requid, :snmpset),      do: _encode_pdu(vblist, requid, 0, 0, :snmpset)
+	def encode_pdu(vblist, requid, :snmpgetnext)do
+		_encode_pdu(vblist, requid, 0, 0, :snmpgetnext)
+	end
+	def encode_pdu(vblist, requid, :snmpset)do
+		_encode_pdu(vblist, requid, 0, 0, :snmpset)
+	end
 	defp _encode_pdu(vblist, requid, errst, errin, type) do
-		body = request_id(requid) <> error_status(errst) <> error_index(errin) <> var_bind_list(vblist)
-		Dict.get(pdu_identifier, type) <> << byte_size(body) >>  <> body
+		body = request_id(requid)
+		<> error_status(errst)
+		<> error_index(errin)
+		<> var_bind_list(vblist)
+		pdu_id(type) <> << byte_size(body) >>  <> body
 	end
 	
 	def var_bind(value, oid) do
