@@ -7,7 +7,10 @@ defmodule Snimple.SnmpPdus do
 			snmpgetnext:     0x01,
 			snmpresponse:    0x02,
 			snmpset:         0x03,
-			snmptrap:        0x04
+			notused:         0x04,
+			snmpgetbulk:     0x05,
+			snmpinform:      0x06,
+			snmptrap:        0x07
 		 }
 	end
 	def pdu_id(id) do
@@ -47,11 +50,14 @@ defmodule Snimple.SnmpPdus do
 	def encode_pdu(vblist, requid, errst, errin, :snmpresponse) do
 		_encode_pdu(vblist, requid, errst, errin, :snmpresponse)
 	end
-	def encode_pdu(vblist, requid, :snmpgetnext)do
+	def encode_pdu(vblist, requid, :snmpgetnext) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpgetnext)
 	end
-	def encode_pdu(vblist, requid, :snmpset)do
+	def encode_pdu(vblist, requid, :snmpset) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpset)
+	end
+	def encode_pdu(vblist, requid, :snmptrap) do
+		_encode_pdu(vblist, requid, error(:noError), 0, :snmptrap)
 	end
 	defp _encode_pdu(vblist, requid, errst, errin, type) do
 		body = request_id(requid)
