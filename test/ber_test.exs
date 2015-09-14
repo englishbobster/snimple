@@ -103,28 +103,34 @@ defmodule BERTest do
 		assert ber_decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>) == <<6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>
 	end
 
-	test "should encode timeticks correctly" do
-		assert true == false
-	end
-
-	test "should encode gauge32 correctly" do
-		assert true == false
+	test "should encode ipaddress correctly" do
+		assert ber_encode("127.0.0.1", :ipaddr) == << 40, 4, 127, 0, 0, 1 >>
+		assert ber_encode("172.21.1.54", :ipaddr) == << 40, 4, 172, 21, 1, 54 >>
 	end
 
 	test "should encode counter32 correctly" do
-		assert true == false
+		assert ber_encode(4294967295, :counter32) == << 41, 4, 12, 34, 55, 33 >>
+		assert ber_encode(4294967296, :counter32) == << 41, 1, 0 >>
+	end
+
+	test "should encode gauge32 correctly" do
+		assert ber_encode(4294967295, :gauge32) == << 42, 4, 12, 34, 55, 33 >>
+		assert ber_encode(4294967296, :gauge32) == :nil
+	end
+
+	test "should encode timeticks correctly" do
+		assert ber_encode(872197439, :timeticks) == << 43, 4, 12, 34, 55, 33 >>
+		assert ber_encode(4294967295, :timeticks) == << 43, 4, 12, 34, 55, 33 >>
+		assert ber_encode(4294967296, :timeticks) == << 43, 1, 0 >>
+	end
+
+	test "should encode opaque correctly" do
+		assert ber_encode("really a double wrapped octetstring", :opaque) == << 44, 4, 12, 34, 55, 33 >>
 	end
 
 	test "should encode counter64 correctly" do
-		assert true == false
-	end
-
-	test "should encode hexstring correctly" do
-		assert true == false
-	end
-
-	test "should encode ipaddress correctly" do
-		assert true == false
+		assert ber_encode(18446744073709551615, :counter64) == << 46, 4, 12, 34, 55, 33 >>
+		assert ber_encode(18446744073709551616, :counter64) == << 46, 1, 0 >>
 	end
 		
 	test "nr_of_bits should return correct value for some inputs" do
