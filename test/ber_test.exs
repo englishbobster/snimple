@@ -31,6 +31,7 @@ defmodule BERTest do
 		assert ber_encode(8, :int32) == << 2, 1, 8 >>
 		assert ber_encode(256, :int32) == << 2, 2, 1, 0 >>
 		assert ber_encode(2138176743, :int32) == << 2, 4, 127, 113, 252, 231 >>
+		assert ber_encode(935904613, :int32) == <<2, 4, 55, 200, 197, 101 >>
 	end
 
 	test "should be able to decode an integer type to integer" do
