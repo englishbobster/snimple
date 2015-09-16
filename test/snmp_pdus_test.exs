@@ -13,7 +13,7 @@ defmodule SNMPGetTest do
 		{:ok, pkt} = Base.decode16("022502047f71fce70201000201003017301506102b06010401c40402030204010104817d020108", [case: :lower])
 		pkt
 	end
-	
+
 	defp example_snmpgetnext_pdu do
 		{:ok, pkt} = Base.decode16("012302045f79337f02010002010030153013060f2b06010401c40402010202010103150500", [case: :lower])
 		pkt
@@ -40,7 +40,7 @@ defmodule SNMPGetTest do
 			"2b02003014060f2b06010401c4040201020201010d3241015d", [case: :lower])
 		pkt
 	end
-	
+
 	defp test_varbind_list do
 		[
 			{ "1.3.6.1.4.1.2680.1.2.7.3.2.0", ber_encode(100, :int32) },
@@ -75,27 +75,27 @@ defmodule SNMPGetTest do
 	end
 
 	test "should be able to construct an snmptrap pdu" do
-		var_bind_list = [{"1.3.6.1.2.1.1.3.0", ber_encode(872197439, :int32)}, #timeticks
-										 {"1.3.6.1.6.3.1.1.4.1.0", ber_encode("1.3.6.1.4.1.8708.2.1.2.3.0.7", :oid)}, #oid
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.1.50", ber_encode(50, :int32)}, #Gauge32
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.2.50", ber_encode("1.3.6.1.4.1.8708.2.1.2.5.2.0", :oid)}, #oid
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.50", ber_encode("1.3.6.1.4.1.8708.2.1.2.5.5.0", :oid)}, #oid
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.4.50", ber_encode("alarmTest", :octetstring)}, #octetstring
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.5.50", ber_encode(5, :int32)}, #Gauge32
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.6.50", ber_encode(0, :int32)}, #Gauge32
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.7.50", ber_encode(5, :int32)}, #integer32
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.8.50", ber_encode(53, :int32)}, #integer32
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.9.50", ber_encode("Test of environmental type critical alarm", :octetstring)}, #octetstring
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.10.50", ber_encode(6, :int32)}, #integer32
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.11.50", ber_encode(<<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>, :octetstring)}, #octetstring
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.12.50", ber_encode(<<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>, :octetstring)}, #octetstring
-										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.13.50", ber_encode(93, :int32)} #counter32
+		var_bind_list = [{"1.3.6.1.2.1.1.3.0", ber_encode(872197439, :timeticks)},
+										 {"1.3.6.1.6.3.1.1.4.1.0", ber_encode("1.3.6.1.4.1.8708.2.1.2.3.0.7", :oid)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.1.50", ber_encode(50, :gauge32)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.2.50", ber_encode("1.3.6.1.4.1.8708.2.1.2.5.2.0", :oid)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.50", ber_encode("1.3.6.1.4.1.8708.2.1.2.5.5.0", :oid)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.4.50", ber_encode("alarmTest", :octetstring)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.5.50", ber_encode(5, :gauge32)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.6.50", ber_encode(0, :gauge32)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.7.50", ber_encode(5, :int32)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.8.50", ber_encode(53, :int32)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.9.50", ber_encode("Test of environmental type critical alarm", :octetstring)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.10.50", ber_encode(6, :int32)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.11.50", ber_encode(<<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>, :octetstring)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.12.50", ber_encode(<<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>, :octetstring)},
+										 {"1.3.6.1.4.1.8708.2.1.2.2.1.1.13.50", ber_encode(93, :counter32)}
 										 ]
 		encoded_pdu = encode_pdu(var_bind_list, 935904613, :snmptrap)
 		assert encoded_pdu == example_snmptrap_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmptrap)
 	end
-	
+
 	test "should be able to make a variable binding" do
 		assert ber_encode(:null) |> var_bind("1.3.1.1.1") == << 48, 8, 6, 4, 43, 1, 1, 1, 5, 0 >>
 		assert ber_encode("octetstring", :octetstring) |> var_bind("1.3.6.1.4.1.2680.1.2.7.3.2.0") == << 48, 28 >>

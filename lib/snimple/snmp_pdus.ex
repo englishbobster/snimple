@@ -16,7 +16,7 @@ defmodule Snimple.SnmpPdus do
 	def pdu_id(id) do
 		Dict.get(pdu_identifier, id)
 	end
-	
+
 	def error_status do
 		%{
 			noError:              0x00,
@@ -43,7 +43,7 @@ defmodule Snimple.SnmpPdus do
 	def error(status) do
 		Dict.get(error_status, status)
 	end
-		
+
 	def encode_pdu(vblist, requid, :snmpget) do
 	_encode_pdu(vblist, requid, error(:noError), 0, :snmpget)
 	end
@@ -66,7 +66,7 @@ defmodule Snimple.SnmpPdus do
 		<> var_bind_list(vblist)
 		<< pdu_id(type) >> <> << byte_size(body) >>  <> body
 	end
-	
+
 	def var_bind(value, oid) do
 		ber_encode(oid, :oid) <> value |> ber_encode(:sequence)
 	end
