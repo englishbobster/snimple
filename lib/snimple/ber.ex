@@ -8,7 +8,12 @@ defmodule Snimple.BER do
 		  null:        0x05,
 		  oid:         0x06,
 			sequence:    0x30,
-			ipaddr:      0x40
+			ipaddr:      0x40,
+			counter32:   0x41,
+			gauge32:     0x42,
+			timeticks:   0x43,
+			opaque:      0x44,
+			counter64:   0x46
 		 }
 	end
 	defp type(id) when is_atom(id) do
@@ -96,6 +101,10 @@ defmodule Snimple.BER do
 		|> Enum.map(fn n -> String.to_integer(n) end)
 		|> :binary.list_to_bin
 		<< type(:ipaddr) >> <> << 4 >> <> ipaddr
+	end
+
+	def ber_encode(counter, :counter32) do
+		
 	end
 
 	def nr_of_bits(value) do
