@@ -122,13 +122,9 @@ defmodule BERTest do
 	end
 
 	test "should encode timeticks correctly" do
-		assert ber_encode(872197439, :timeticks) == << 43, 4, 12, 34, 55, 33 >>
-		assert ber_encode(4294967295, :timeticks) == << 43, 4, 12, 34, 55, 33 >>
-		assert ber_encode(4294967296, :timeticks) == << 43, 1, 0 >>
-	end
-
-	test "should encode opaque correctly" do
-		assert ber_encode("really a double wrapped octetstring", :opaque) == << 44, 4, 12, 34, 55, 33 >>
+		assert ber_encode(0, :timeticks) == << 67, 1, 0 >>
+		assert ber_encode(4294967295, :timeticks) == << 67, 4, 255, 255, 255, 255 >>
+		assert ber_encode(4294967296, :timeticks) == << 67, 1, 0 >>
 	end
 
 	test "should encode counter64 correctly" do

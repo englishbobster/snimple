@@ -129,6 +129,10 @@ defmodule Snimple.BER do
 		_ber_encode_integer_type(value, @int64mask, :counter64)
 	end
 
+	def ber_encode(timetick, :timeticks) do
+		_ber_encode_integer_type(timetick, @int32mask, :timeticks)
+	end
+
 	defp _ber_encode_integer_type(value, mask, t) when is_atom(t) do
 		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
 		<< type(t) >> <>
