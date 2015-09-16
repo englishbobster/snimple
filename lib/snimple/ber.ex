@@ -7,7 +7,8 @@ defmodule Snimple.BER do
 		  octetstring: 0x04,
 		  null:        0x05,
 		  oid:         0x06,
-			sequence:    0x30
+			sequence:    0x30,
+			ipaddr:      0x40
 		 }
 	end
 	defp type(id) when is_atom(id) do
@@ -88,6 +89,13 @@ defmodule Snimple.BER do
 	defp _encode(value, current, remaining_bits) do
 		val = Bitwise.&&&(value, 0x7F) |> Bitwise.|||(0x80)
 		_encode(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7)
+	end
+
+	def ber_encode(ip, :ipaddr) do
+		ipaddr = ip |> String.split(".")
+		|> Enum.map(fn n -> String.to_integer(n) end)
+		|> :binary.list_to_bin
+		<< type(:ipaddr) >> <> << 4 >> <> ipaddr
 	end
 
 	def nr_of_bits(value) do

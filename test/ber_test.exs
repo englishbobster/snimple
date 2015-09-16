@@ -104,8 +104,8 @@ defmodule BERTest do
 	end
 
 	test "should encode ipaddress correctly" do
-		assert ber_encode("127.0.0.1", :ipaddr) == << 40, 4, 127, 0, 0, 1 >>
-		assert ber_encode("172.21.1.54", :ipaddr) == << 40, 4, 172, 21, 1, 54 >>
+		assert ber_encode("127.0.0.1", :ipaddr) == << 64, 4, 127, 0, 0, 1 >>
+		assert ber_encode("172.21.1.54", :ipaddr) == << 64, 4, 172, 21, 1, 54 >>
 	end
 
 	test "should encode counter32 correctly" do
@@ -132,7 +132,7 @@ defmodule BERTest do
 		assert ber_encode(18446744073709551615, :counter64) == << 46, 4, 12, 34, 55, 33 >>
 		assert ber_encode(18446744073709551616, :counter64) == << 46, 1, 0 >>
 	end
-		
+
 	test "nr_of_bits should return correct value for some inputs" do
 		assert nr_of_bits(19865) == 15
 		assert nr_of_bits(841557) == 20
