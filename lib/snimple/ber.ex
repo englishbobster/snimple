@@ -1,5 +1,9 @@
 defmodule Snimple.BER do
 	use Bitwise
+	@int32max (4294967295)
+	@int32mask (0xFFFFFFFF)
+	@int64mask (0xFFFFFFFFFFFFFFFF)
+	@int64max (18446744073709551615)
 
 	defp type_identifier do
 		%{
@@ -23,15 +27,19 @@ defmodule Snimple.BER do
 	def ber_decode(<< 0x30, len::integer, data::binary-size(len) >>) do
 		data
 	end
+
 	def ber_decode(<< 0x02, len::integer, data::binary-size(len) >>) do
 		:binary.decode_unsigned(data)
 	end
+
 	def ber_decode(<< 0x04, len::integer, data::binary-size(len) >>) do
 		data
 	end
-	def ber_decode(<< 0x05, len::integer, data::binary-size(len) >>) do
+
+	def ber_decode(<< 0x05, len::integer, _data::binary-size(len) >>) do
 		:null
 	end
+
 	def ber_decode(<< 0x06, len::integer, data::binary-size(len) >>) do
 		<< head, tail::binary >> = data
 		first_byte = [1, head - 40 ]
@@ -42,7 +50,7 @@ defmodule Snimple.BER do
 		list = :binary.bin_to_list(bin)
 		_decode(0, list, [])
 	end
-	defp _decode(register, [], target) do
+	defp _decode(_register, [], target) do
 		target
 	end
 	defp _decode(register, [head|tail], target) when head <= 127 do
@@ -57,15 +65,11 @@ defmodule Snimple.BER do
 	def ber_encode(seq, :sequence) when is_binary(seq) do
 		<< type(:sequence) >> <> << byte_size(seq) >> <> seq
 	end
-	def ber_encode(value, :int32) when is_integer(value) do
-		value_as_bin = :binary.encode_unsigned(value)
-		<< type(:int32) >> <>
-	  << byte_size(value_as_bin) >> <>
-		value_as_bin
-	end
+
 	def ber_encode(value, :octetstring) when is_binary(value) do
 		<< type(:octetstring) >> <> << byte_size(value) >> <> value
 	end
+
 	def ber_encode(oid_string, :oid) do
 		oid_nodes = oid_string |> String.strip(?.)
 		|> String.split(".")
@@ -77,12 +81,15 @@ defmodule Snimple.BER do
 		|> Enum.join
 		<< type(:oid) >> <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
  	end
+
 	def ber_encode(:null) do
 		<< type(:null) >> <> << byte_size(<<>>) >>
 	end
+
 	def encode_oid_node(node) when node <= 127 do
 		<< node >>
 	end
+
 	def encode_oid_node(node) do
 		size = nr_of_bits(node)
 		value = << Bitwise.&&&(node, 0x7F) >>
@@ -103,8 +110,30 @@ defmodule Snimple.BER do
 		<< type(:ipaddr) >> <> << 4 >> <> ipaddr
 	end
 
+	def ber_encode(value, :int32) when is_integer(value) do
+		_ber_encode_integer_type(value, @int32mask, :int32)
+	end
+
 	def ber_encode(counter, :counter32) do
-		
+		_ber_encode_integer_type(counter, @int32mask, :counter32)
+	end
+
+	def ber_encode(value, :gauge32) when value <= @int32max do
+		_ber_encode_integer_type(value, @int32mask, :gauge32)
+	end
+	def ber_encode(_value, :gauge32) do
+		_ber_encode_integer_type(@int32max, @int32mask, :gauge32)
+	end
+
+	def ber_encode(value, :counter64) do
+		_ber_encode_integer_type(value, @int64mask, :counter64)
+	end
+
+	defp _ber_encode_integer_type(value, mask, t) when is_atom(t) do
+		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
+		<< type(t) >> <>
+	  << byte_size(value_as_bin) >> <>
+		value_as_bin
 	end
 
 	def nr_of_bits(value) do

@@ -109,13 +109,16 @@ defmodule BERTest do
 	end
 
 	test "should encode counter32 correctly" do
-		assert ber_encode(4294967295, :counter32) == << 41, 4, 12, 34, 55, 33 >>
-		assert ber_encode(4294967296, :counter32) == << 41, 1, 0 >>
+		assert ber_encode(0, :counter32) == << 65, 1, 0 >>
+		assert ber_encode(4294967295, :counter32) == << 65, 4, 255, 255, 255, 255 >>
+		assert ber_encode(4294967296, :counter32) == << 65, 1, 0 >>
+		assert ber_encode(4294967298, :counter32) == << 65, 1, 2 >>
 	end
 
 	test "should encode gauge32 correctly" do
-		assert ber_encode(4294967295, :gauge32) == << 42, 4, 12, 34, 55, 33 >>
-		assert ber_encode(4294967296, :gauge32) == :nil
+		assert ber_encode(0, :gauge32) == << 66, 1, 0 >>
+		assert ber_encode(4294967295, :gauge32) == << 66, 4, 255, 255, 255, 255 >>
+		assert ber_encode(4294967296, :gauge32) == << 66, 4, 255, 255, 255, 255 >>
 	end
 
 	test "should encode timeticks correctly" do
@@ -129,8 +132,9 @@ defmodule BERTest do
 	end
 
 	test "should encode counter64 correctly" do
-		assert ber_encode(18446744073709551615, :counter64) == << 46, 4, 12, 34, 55, 33 >>
-		assert ber_encode(18446744073709551616, :counter64) == << 46, 1, 0 >>
+		assert ber_encode(0, :counter64) == << 70, 1, 0 >>
+		assert ber_encode(18446744073709551615, :counter64) == << 70, 8, 255, 255, 255, 255, 255, 255, 255, 255 >>
+		assert ber_encode(18446744073709551616, :counter64) == << 70, 1, 0 >>
 	end
 
 	test "nr_of_bits should return correct value for some inputs" do
