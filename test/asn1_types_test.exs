@@ -9,7 +9,7 @@ defmodule ASN1TypesTest do
 		binary_size_small = 1..10 |> Enum.map(fn x -> x end) |> :binary.list_to_bin
 		binary_size_large = 1..250 |> Enum.map(fn x -> x end) |> :binary.list_to_bin
 		assert data_size(binary_size_small) == << 10 >>
-		assert data_size(binary_size_large <> binary_size_large) == << 0xA2, 0, 0 >>  
+		assert data_size(binary_size_large <> binary_size_large) == << 0x82, 1, 244 >>  
 	end
 		
 	test "should be able to encode any size integer" do
