@@ -74,8 +74,8 @@ defmodule BERTest do
 	end
 
 	test "should encode an oid node less than 128" do
-		assert encode_oid_node(127) == <<0x7F>>
-		assert encode_oid_node(65) == <<0x41>>
+		assert encode_oid_node(127) == << 0x7F >>
+		assert encode_oid_node(65) == << 0x41 >>
 	end
 
 	test "should encode oid node greater than or equal to 128" do
