@@ -139,7 +139,7 @@ defmodule Snimple.BER do
 	  << byte_size(value_as_bin) >> <>
 		value_as_bin
 	end
-
+	
 	def nr_of_bits(value) do
 		:erlang.trunc(:math.log2(value)) + 1
 	end
