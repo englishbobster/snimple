@@ -51,6 +51,7 @@ defmodule ASN1TypesTest do
 		assert decode(<< 2, 2, 1, 0 >>) == %{type: :integer, length: 2, value: 256}
 		assert decode(<< 2, 4, 127, 113, 252, 231 >>) == %{type: :integer, length: 4, value: 2138176743}
 		assert decode(<<2, 8, 133, 43, 178, 105, 52, 44, 51, 223>>) == %{type: :integer, length: 8, value: 9595959595959595999}
+		assert decode(<<2, 8, 133, 43, 178, 105, 52, 44, 51, 223>> <> "too long") == %{type: :integer, length: 8, value: 9595959595959595999}
 	end
 
 	test "should be able to encode an octetstring" do
@@ -62,6 +63,7 @@ defmodule ASN1TypesTest do
 		test_string_size = byte_size(test_string)
 		octetstring_bin = << 4 >> <> << test_string_size >> <> test_string
 		assert decode(octetstring_bin) == %{type: :octetstring, length: test_string_size, value: test_string}
+		assert decode(octetstring_bin <> "too long") == %{type: :octetstring, length: test_string_size, value: test_string}
 	end
 
 	test "should be able to encode null value" do
@@ -70,6 +72,7 @@ defmodule ASN1TypesTest do
 
 	test "should be able to decode null value" do
 		assert decode(<< 5, 0 >>) == %{type: :null, length: 0, value: nil}
+		assert decode(<< 5, 0 >> <> "too long") == %{type: :null, length: 0, value: nil}
 	end
 
 	test "should be able to encode assorted OIDs accordingly" do
@@ -88,6 +91,7 @@ defmodule ASN1TypesTest do
 		assert test_oid_bin(:oid_4) |> decode() == %{type: :oid, length: 13, value: test_oid_str(:oid_4)}
 		assert test_oid_bin(:oid_5) |> decode() == %{type: :oid, length: 13, value: "." <> test_oid_str(:oid_5)}
 		assert test_oid_bin(:oid_6) |> decode() == %{type: :oid, length: 16, value: "." <> test_oid_str(:oid_6)}
+		assert test_oid_bin(:oid_6) <> "too long" |> decode() == %{type: :oid, length: 16, value: "." <> test_oid_str(:oid_6)}
 	end
 
 	test "should encode an oid node less than 128" do
@@ -125,6 +129,7 @@ defmodule ASN1TypesTest do
 															 ]
 												}
 		assert decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>) == expected_result
+		assert decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >> <> "too long") == expected_result
 	end
 	
 end

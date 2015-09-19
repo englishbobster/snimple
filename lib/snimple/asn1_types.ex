@@ -59,6 +59,7 @@ defmodule Snimple.ASN1.Types do
 
 	def decode(<< 0x02, data::binary >>) do
 		{len, data} = decoded_data_size(data)
+		data = :binary.part(data, 0, len)
 		%{ type: :integer,
 			 length: len,
 			 value: :binary.decode_unsigned(data)
@@ -67,6 +68,7 @@ defmodule Snimple.ASN1.Types do
 
 	def decode(<< 0x04, data::binary >>) do
 		{len, data} = decoded_data_size(data)
+		data = :binary.part(data, 0, len)
 		%{type: :octetstring,
 			length: len,
 			value: data
@@ -81,8 +83,24 @@ defmodule Snimple.ASN1.Types do
 		 }
 	end
 
+	def decode(<< 0x30, data::binary >>) do
+		{len, data} = decoded_data_size(data)
+		data = :binary.part(data, 0, len)		
+		sequence_list = _decode_sequence_data([], data)
+		%{type: :sequence, length: len, value: sequence_list}
+	end
+	defp _decode_sequence_data(list, data) do
+		result = decode(data)
+		list ++ result
+		_decode_sequence_data(list, <<>>)
+	end
+	defp _decode_sequence_data(list, <<>>) do
+		list
+	end
+
 	def decode(<< 0x06, data::binary >>) do
 		{len, data} = decoded_data_size(data)
+		data = :binary.part(data, 0, len)
 		<< head, tail::binary >> = data
 		first_byte = [ 1, head - 40 ]
 		result = first_byte ++ decode_oid_node(tail) |> Enum.join(".")
