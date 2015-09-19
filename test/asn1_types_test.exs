@@ -110,4 +110,21 @@ defmodule ASN1TypesTest do
 		assert decode_oid_node(<< 0x81, 0x9B, 0x19 >>) == [19865]
 	end
 	
+	test "should be able to encode a sequence correctly" do
+		value = encode(0, :null)
+		oid = encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
+		assert encode({oid, value}, :sequence) ==  << 48, 19 >> <>  << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >> <> << 5, 0 >>
+	end
+
+	test "should be able to decode a sequence binary correctly" do
+		expected_result = %{type: :sequence,
+												length: 19,
+												value: [
+													%{type: :oid, length: 15, value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16"},
+													%{type: :null, length: 0, value: nil}
+															 ]
+												}
+		assert decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>) == expected_result
+	end
+	
 end
