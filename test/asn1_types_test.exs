@@ -65,7 +65,7 @@ defmodule ASN1TypesTest do
 	end
 
 	test "should be able to encode null value" do
-		assert encode(:null) == << 5, 0 >>
+		assert encode(0, :null) == << 5, 0 >>
 	end
 
 	test "should be able to decode null value" do

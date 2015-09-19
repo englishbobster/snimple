@@ -22,7 +22,7 @@ defmodule Snimple.ASN1.Types do
 		<< type(:octetstring) >> <> encoded_data_size(value) <> value
 	end
 	
-	def encode(:null), do: << type(:null) >> <> << 0 >>
+	def encode(_, :null), do: << type(:null) >> <> << 0 >>
 
 	def encode(oid_string, :oid) do
 		oid_nodes = oid_string |> String.strip(?.)
@@ -68,7 +68,7 @@ defmodule Snimple.ASN1.Types do
 	end
 
 	def decode(<< 0x05, data::binary >>) do
-		{len, data} = decoded_data_size(data)
+		{len, _} = decoded_data_size(data)
 		%{type: :null,
 			length: len,
 			value: nil
