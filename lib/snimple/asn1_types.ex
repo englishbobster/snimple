@@ -24,6 +24,33 @@ defmodule Snimple.ASN1.Types do
 	
 	def encode(:null), do: << type(:null) >> <> << 0 >>
 
+	def encode(oid_string, :oid) do
+		oid_nodes = oid_string |> String.strip(?.)
+		|> String.split(".")
+		|> Enum.map(fn nr -> String.to_integer(nr) end)
+		{[a, b], oid_tail} = oid_nodes
+		|> Enum.split(2)
+		oid = oid_tail
+		|> Enum.map(fn oid_node -> encode_oid_node(oid_node) end)
+		|> Enum.join
+		<< type(:oid) >> <> << (byte_size(oid) + 1) >> <> << a*40 + b >> <> oid
+ 	end
+	def encode_oid_node(node) when node <= 127 do
+		<< node >>
+	end
+	def encode_oid_node(node) do
+		size = nr_of_bits(node)
+		value = << Bitwise.&&&(node, 0x7F) >>
+		_encode_node(Bitwise.>>>(node, 7), value, size - 7)
+	end
+	defp _encode_node(_, current, value) when value <= 0 do
+		current
+	end
+	defp _encode_node(value, current, remaining_bits) do
+		val = Bitwise.&&&(value, 0x7F) |> Bitwise.|||(0x80)
+		_encode_node(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7)
+	end
+
 	def decode(<< 0x02, data::binary >>) do
 		{len, data} = decoded_data_size(data)
 		%{ type: :integer,
@@ -47,7 +74,33 @@ defmodule Snimple.ASN1.Types do
 			value: nil
 		 }
 	end
-	
+
+	def decode(<< 0x06, data::binary >>) do
+		{len, data} = decoded_data_size(data)
+		<< head, tail::binary >> = data
+		first_byte = [ 1, head - 40 ]
+		result = first_byte ++ decode_oid_node(tail) |> Enum.join(".")
+		%{type: :oid,
+			length: len,
+			value: "." <> result
+			}
+	end
+	def decode_oid_node(bin) do
+		list = :binary.bin_to_list(bin)
+		_decode_node(0, list, [])
+	end
+	defp _decode_node(_register, [], target) do
+		target
+	end
+	defp _decode_node(register, [head|tail], target) when head <= 127 do
+		register = register + head
+		_decode_node(0, tail, target ++ [register])
+	end
+	defp _decode_node(register, [head|tail], target) do
+		register = register + Bitwise.&&&(head, 0x7F)
+		_decode_node(Bitwise.<<<(register, 7), tail, target)
+	end
+
 	def encode_integer_type(value, mask, t) when is_atom(t) do
 		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
 		<< type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
@@ -67,6 +120,10 @@ defmodule Snimple.ASN1.Types do
 	end
 	def decoded_data_size(<< 1::size(1), longform_size::size(7), size_data::binary-size(longform_size), data::binary >>) do
 		{:binary.decode_unsigned(size_data), data}
+	end
+
+	defp nr_of_bits(value) do
+		:erlang.trunc(:math.log2(value)) + 1
 	end
 	
 end

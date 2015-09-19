@@ -82,12 +82,12 @@ defmodule ASN1TypesTest do
 	end
 
 	test "should be able to decode assorted OIDs accordingly" do
-		assert test_oid_bin(:oid_1) |> decode() == %{type: :oid, length: 0, value: test_oid_str(:oid_1)}
-		assert test_oid_bin(:oid_2) |> decode() == %{type: :oid, length: 0, value: test_oid_str(:oid_2)}
-		assert test_oid_bin(:oid_3) |> decode() == %{type: :oid, length: 0, value: test_oid_str(:oid_3)}
-		assert test_oid_bin(:oid_4) |> decode() == %{type: :oid, length: 0, value: test_oid_str(:oid_4)}
-		assert test_oid_bin(:oid_5) |> decode() == %{type: :oid, length: 0, value: "." <> test_oid_str(:oid_5)}
-		assert test_oid_bin(:oid_6) |> decode() == %{type: :oid, length: 0, value: "." <> test_oid_str(:oid_6)}
+		assert test_oid_bin(:oid_1) |> decode() == %{type: :oid, length: 15, value: test_oid_str(:oid_1)}
+		assert test_oid_bin(:oid_2) |> decode() == %{type: :oid, length: 16, value: test_oid_str(:oid_2)}
+		assert test_oid_bin(:oid_3) |> decode() == %{type: :oid, length: 16, value: test_oid_str(:oid_3)}
+		assert test_oid_bin(:oid_4) |> decode() == %{type: :oid, length: 13, value: test_oid_str(:oid_4)}
+		assert test_oid_bin(:oid_5) |> decode() == %{type: :oid, length: 13, value: "." <> test_oid_str(:oid_5)}
+		assert test_oid_bin(:oid_6) |> decode() == %{type: :oid, length: 16, value: "." <> test_oid_str(:oid_6)}
 	end
 
 	test "should encode an oid node less than 128" do
