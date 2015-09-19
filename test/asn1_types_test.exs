@@ -113,7 +113,7 @@ defmodule ASN1TypesTest do
 	test "should be able to encode a sequence correctly" do
 		value = encode(0, :null)
 		oid = encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
-		assert encode({oid, value}, :sequence) ==  << 48, 19 >> <>  << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >> <> << 5, 0 >>
+		assert encode([{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence) ==  << 48, 19 >> <>  oid <> value
 	end
 
 	test "should be able to decode a sequence binary correctly" do

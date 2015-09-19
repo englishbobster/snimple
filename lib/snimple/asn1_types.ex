@@ -24,6 +24,12 @@ defmodule Snimple.ASN1.Types do
 	
 	def encode(_, :null), do: << type(:null) >> <> << 0 >>
 
+	def encode(seq, :sequence) do
+		result = seq |> Enum.map(fn {value, type} -> encode(value, type) end)
+		|> Enum.join
+		<< type(:sequence) >> <> encoded_data_size(result) <> result
+	end
+	
 	def encode(oid_string, :oid) do
 		oid_nodes = oid_string |> String.strip(?.)
 		|> String.split(".")
