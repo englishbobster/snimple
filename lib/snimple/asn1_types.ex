@@ -89,7 +89,7 @@ defmodule Snimple.ASN1.Types do
 		sequence_list = _decode_sequence_data([], data)
 		%{type: :sequence, length: len, value: sequence_list}
 	end
-		defp _decode_sequence_data(list, <<>>) do
+	defp _decode_sequence_data(list, <<>>) do
 		list
 	end
 	defp _decode_sequence_data(list, data) do
