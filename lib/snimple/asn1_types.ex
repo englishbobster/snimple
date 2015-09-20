@@ -89,13 +89,18 @@ defmodule Snimple.ASN1.Types do
 		sequence_list = _decode_sequence_data([], data)
 		%{type: :sequence, length: len, value: sequence_list}
 	end
+		defp _decode_sequence_data(list, <<>>) do
+		list
+	end
 	defp _decode_sequence_data(list, data) do
 		result = decode(data)
-		list ++ result
-		_decode_sequence_data(list, <<>>)
-	end
-	defp _decode_sequence_data(list, <<>>) do
-		list
+		pattern = decode_as_binary_only(data)
+		case pattern do
+			<<>> -> data = pattern
+			_    -> data = :binary.split(data, pattern) |> List.last
+		end
+		list = List.insert_at(list, -1, result)
+		_decode_sequence_data(list, data)
 	end
 
 	def decode(<< 0x06, data::binary >>) do
@@ -125,6 +130,11 @@ defmodule Snimple.ASN1.Types do
 		_decode_node(Bitwise.<<<(register, 7), tail, target)
 	end
 
+	def decode_as_binary_only(<<_::binary-size(1), data::binary >>) do
+		{len, data} = decoded_data_size(data)
+		:binary.part(data, 0, len)
+	end
+		
 	def encode_integer_type(value, mask, t) when is_atom(t) do
 		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
 		<< type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
