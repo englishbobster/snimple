@@ -1,6 +1,6 @@
 defmodule Snimple.ASN1.Types do
 	use Bitwise
-	
+
 	defp type_identifier do
 		%{
 			integer:     0x02,
@@ -21,7 +21,7 @@ defmodule Snimple.ASN1.Types do
 	def encode(value, :octetstring) do
 		<< type(:octetstring) >> <> encoded_data_size(value) <> value
 	end
-	
+
 	def encode(_, :null), do: << type(:null) >> <> << 0 >>
 
 	def encode(seq, :sequence) do
@@ -29,7 +29,7 @@ defmodule Snimple.ASN1.Types do
 		|> Enum.join
 		<< type(:sequence) >> <> encoded_data_size(result) <> result
 	end
-	
+
 	def encode(oid_string, :oid) do
 		oid_nodes = oid_string |> String.strip(?.)
 		|> String.split(".")
@@ -85,7 +85,7 @@ defmodule Snimple.ASN1.Types do
 
 	def decode(<< 0x30, data::binary >>) do
 		{len, data} = decoded_data_size(data)
-		data = :binary.part(data, 0, len)		
+		data = :binary.part(data, 0, len)
 		sequence_list = _decode_sequence_data([], data)
 		%{type: :sequence, length: len, value: sequence_list}
 	end
@@ -134,7 +134,7 @@ defmodule Snimple.ASN1.Types do
 		{len, data} = decoded_data_size(data)
 		:binary.part(data, 0, len)
 	end
-		
+
 	def encode_integer_type(value, mask, t) when is_atom(t) do
 		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
 		<< type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
@@ -159,5 +159,5 @@ defmodule Snimple.ASN1.Types do
 	defp nr_of_bits(value) do
 		:erlang.trunc(:math.log2(value)) + 1
 	end
-	
+
 end

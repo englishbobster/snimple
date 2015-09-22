@@ -26,26 +26,26 @@ defmodule ASN1TypesTest do
 		{_, bin} = Dict.get(test_oids, oid)
 		bin
 	end
-	
+
 	test "should encode size according to primitive, definite length method" do
 		assert encoded_data_size(binary_size_small) == << 10 >>
 		assert encoded_data_size(binary_size_large) == << 0x81, 250 >>
-		assert encoded_data_size(binary_size_mega) == << 0x82, 1, 244 >>  
+		assert encoded_data_size(binary_size_mega) == << 0x82, 1, 244 >>
 	end
 
 	test "should decode given size according to primitive, definite length method" do
-		assert decoded_data_size(<< 10 >> <> binary_size_small) == {10, binary_size_small} 
+		assert decoded_data_size(<< 10 >> <> binary_size_small) == {10, binary_size_small}
 		assert decoded_data_size(<< 0x81, 250 >> <> binary_size_large)== {250, binary_size_large}
 		assert decoded_data_size(<< 0x82, 1 , 244 >> <> binary_size_mega) == {500, binary_size_mega}
 	end
-			
+
 	test "should be able to encode any size integer" do
 		assert encode(0, :integer) == << 2, 1, 0 >>
 		assert encode(256, :integer) == << 2, 2, 1, 0 >>
 		assert encode(2138176743, :integer) == << 2, 4, 127, 113, 252, 231 >>
 		assert encode(9595959595959595999, :integer) == <<2, 8, 133, 43, 178, 105, 52, 44, 51, 223>>
 	end
-	
+
 	test "should be able to decode any size integer type" do
 		assert decode(<< 2, 1, 0 >>) == %{type: :integer, length: 1, value: 0}
 		assert decode(<< 2, 2, 1, 0 >>) == %{type: :integer, length: 2, value: 256}
@@ -104,16 +104,16 @@ defmodule ASN1TypesTest do
 		assert encode_oid_node(19865) == << 0x81, 0x9B, 0x19 >>
 	end
 
-	test "should decode partial binary less than 128 to oid node" do
+	test "should decode binary less than 128 to oid node" do
 		assert decode_oid_node(<< 0x7F >>) == [127]
 		assert decode_oid_node(<< 0x41 >>) == [65]
 	end
 
-	test "should decode partial binary greater than or equal to 128 to oid node" do
+	test "should decode binary greater than or equal to 128 to oid node" do
 		assert decode_oid_node(<< 0xC4, 0x04 >>) == [8708]
 		assert decode_oid_node(<< 0x81, 0x9B, 0x19 >>) == [19865]
 	end
-	
+
 	test "should be able to encode a sequence correctly" do
 		value = encode(0, :null)
 		oid = encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
@@ -131,5 +131,5 @@ defmodule ASN1TypesTest do
 		assert decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>) == expected_result
 		assert decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >> <> "too long") == expected_result
 	end
-	
+
 end

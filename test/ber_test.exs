@@ -38,71 +38,6 @@ defmodule BERTest do
 		assert ber_decode(<< 2, 4, 127, 113, 252, 231 >>) == 2138176743
 	end
 
-	test "should be able to encode null value" do
-		assert ber_encode(:null) == << 5, 0 >>
-	end
-
-	test "should be able to decode null value" do
-		assert ber_decode(<< 5, 0 >>) == :null
-	end
-
-	test "should be able to encode an octetstring" do
-		test_string_size = byte_size(test_string)
-		assert ber_encode(test_string, :octetstring) == << 4 >> <> << test_string_size >> <> test_string
-	end
-
-	test "should be able to decode a binary to an octet string" do
-		assert ber_decode(<< 4, 23 >> <> "this should be a string") ==  "this should be a string"
-	end
-
-	test "should be able to encode assorted OIDs accordingly" do
-		assert test_oid_str(:oid_1) |> ber_encode(:oid) == test_oid_bin(:oid_1)
-		assert test_oid_str(:oid_2) |> ber_encode(:oid) == test_oid_bin(:oid_2)
-		assert test_oid_str(:oid_3) |> ber_encode(:oid) == test_oid_bin(:oid_3)
-		assert test_oid_str(:oid_4) |> ber_encode(:oid) == test_oid_bin(:oid_4)
-		assert test_oid_str(:oid_5) |> ber_encode(:oid) == test_oid_bin(:oid_5)
-		assert test_oid_str(:oid_6) |> ber_encode(:oid) == test_oid_bin(:oid_6)
-	end
-
-	test "should be able to decode assorted OIDs accordingly" do
-		assert test_oid_bin(:oid_1) |> ber_decode() == test_oid_str(:oid_1)
-		assert test_oid_bin(:oid_2) |> ber_decode() == test_oid_str(:oid_2)
-		assert test_oid_bin(:oid_3) |> ber_decode() == test_oid_str(:oid_3)
-		assert test_oid_bin(:oid_4) |> ber_decode() == test_oid_str(:oid_4)
-		assert test_oid_bin(:oid_5) |> ber_decode() == "." <> test_oid_str(:oid_5)
-		assert test_oid_bin(:oid_6) |> ber_decode() == "." <> test_oid_str(:oid_6)
-	end
-
-	test "should encode an oid node less than 128" do
-		assert encode_oid_node(127) == << 0x7F >>
-		assert encode_oid_node(65) == << 0x41 >>
-	end
-
-	test "should encode oid node greater than or equal to 128" do
-		assert encode_oid_node(8708) == << 0xC4, 0x04 >>
-		assert encode_oid_node(19865) == << 0x81, 0x9B, 0x19 >>
-	end
-
-	test "should decode oids less than 128" do
-		assert decode_oid_node(<< 0x7F >>) == [127]
-		assert decode_oid_node(<< 0x41 >>) == [65]
-	end
-
-	test "should decode oids greater than or equal to 128" do
-		assert decode_oid_node(<< 0xC4, 0x04 >>) == [8708]
-		assert decode_oid_node(<< 0x81, 0x9B, 0x19 >>) == [19865]
-	end
-
-	test "should encode a sequence correctly" do
-		value = ber_encode(:null)
-		oid = ber_encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
-		assert ber_encode(oid <> value, :sequence) ==  << 48, 19 >> <>  << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >> <> << 5, 0 >>
-	end
-
-	test "should decode a sequence correctly" do
-		assert ber_decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>) == <<6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>
-	end
-
 	test "should encode ipaddress correctly" do
 		assert ber_encode("127.0.0.1", :ipaddr) == << 64, 4, 127, 0, 0, 1 >>
 		assert ber_encode("172.21.1.54", :ipaddr) == << 64, 4, 172, 21, 1, 54 >>
@@ -131,11 +66,6 @@ defmodule BERTest do
 		assert ber_encode(0, :counter64) == << 70, 1, 0 >>
 		assert ber_encode(18446744073709551615, :counter64) == << 70, 8, 255, 255, 255, 255, 255, 255, 255, 255 >>
 		assert ber_encode(18446744073709551616, :counter64) == << 70, 1, 0 >>
-	end
-
-	test "nr_of_bits should return correct value for some inputs" do
-		assert nr_of_bits(19865) == 15
-		assert nr_of_bits(841557) == 20
 	end
 
 end
