@@ -3,30 +3,6 @@ defmodule BERTest do
 
 	import Snimple.BER
 
-	defp test_oids do
-	%{
-		oid_1: {".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16",    << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >> },       #an oid
-		oid_2: {".1.3.6.1.4.1.8708.2.4.2.2.1.1.72.1667", << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 2, 1, 1, 72, 141, 3 >> },  #greater than 127 at the end
-		oid_3: {".1.3.6.1.4.1.8708.2.4.2.0.1.1.72.1667", << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 0, 1, 1, 72, 141, 3 >> },  #zero somewhere in the middle
-		oid_4: {".1.3.6.1.4.1.19865.1.2.1.6.0",          <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>> },             #zero at the end
-		oid_5: {"1.3.6.1.4.1.19865.1.2.1.6.0",           <<6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>> },             #no . as start
-		oid_6: {"1.3.0.1.4.1.2680.1.2.7.3.2.19865.0",	   <<6, 16, 43, 0, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 129, 155, 25, 0 >> }#unholy combo
-	}
-	end
-
-	defp test_oid_str(oid) do
-		{str, _} = Dict.get(test_oids, oid)
-		str
-	end
-	defp test_oid_bin(oid) do
-		{_, bin} = Dict.get(test_oids, oid)
-		bin
-	end
-
-	defp test_string do
-		"a test octet string"
-	end
-
 	test "should be able to encode an integer32 according to integer binary" do
 		assert ber_encode(8, :int32) == << 2, 1, 8 >>
 		assert ber_encode(256, :int32) == << 2, 2, 1, 0 >>
