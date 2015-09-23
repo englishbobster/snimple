@@ -28,7 +28,11 @@ defmodule Snimple.SNMP.Types do
 		encode_integer_type(value, @int32mask, :integer32)
 	end
 
-	def encode(ipaddress, :ipaddr) do
+	def encode(ip, :ipaddr) do
+		ipaddr = ip |> String.split(".")
+		|> Enum.map(fn n -> String.to_integer(n) end)
+		|> :binary.list_to_bin
+		<< snmp_type(:ipaddr) >> <> << 4 >> <> ipaddr
 	end
 
 	def encode(value, :counter32) do
