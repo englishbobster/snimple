@@ -4,14 +4,14 @@ defmodule SNMPTypesTest do
 	import Snimple.SNMP.Types
 
 	test "should be able to encode an int32" do
-		assert encode(8, :int32) == << 2, 1, 8 >>
-		assert encode(256, :int32) == << 2, 2, 1, 0 >>
-		assert encode(2138176743, :int32) == << 2, 4, 127, 113, 252, 231 >>
-		assert encode(935904613, :int32) == <<2, 4, 55, 200, 197, 101 >>
+		assert encode(8, :integer32) == << 2, 1, 8 >>
+		assert encode(256, :integer32) == << 2, 2, 1, 0 >>
+		assert encode(2138176743, :integer32) == << 2, 4, 127, 113, 252, 231 >>
+		assert encode(935904613, :integer32) == <<2, 4, 55, 200, 197, 101 >>
 	end
 
 	test "should be able to decode an int32 type" do
-		assert decode(<< 2, 4, 127, 113, 252, 231 >>) == %{type: :int32, length: 4, value: 2138176743}
+		assert decode(<< 2, 4, 127, 113, 252, 231 >>) == %{type: :integer32, length: 4, value: 2138176743}
 	end
 
 	test "should encode ipaddress correctly" do

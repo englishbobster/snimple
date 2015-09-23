@@ -136,11 +136,6 @@ defmodule Snimple.ASN1.Types do
 		:binary.part(data, 0, len)
 	end
 
-	def encode_integer_type(value, mask, t) when is_atom(t) do
-		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
-		<< type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
-	end
-
 	def encoded_data_size(data), do: byte_size(data) |> _encoded_data_size()
 	defp _encoded_data_size(size) when size <= 127 do
 		<< size >>
