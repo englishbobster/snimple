@@ -7,15 +7,14 @@ defmodule Snimple.SNMP.Types do
 	@int32mask (0xFFFFFFFF)
 	@int64mask (0xFFFFFFFFFFFFFFFF)
 	@int64max  (18446744073709551615)
-	
-	defp asn1_type_integer, do: ASN1.type(:integer)
+
 	defp snmp_type_identifier do
 		%{
-			integer32:   asn1_type_integer,
+			integer32:   0x02, #same as ASN1 integer type
 			ipaddr:      0x40,
 			counter32:   0x41,
 			unsigned32:  0x42,
-			gauge32:     snmp_type(:unsigned32),
+			gauge32:     0x42, #indistinguishable from unsigned32
 			timeticks:   0x43,
 			opaque:      0x44,
 			counter64:   0x46
@@ -24,23 +23,34 @@ defmodule Snimple.SNMP.Types do
 	defp snmp_type(id) when is_atom(id) do
 		Dict.get(snmp_type_identifier, id)
 	end
-	
+
 	def encode(value, :integer32) do
+		encode_integer_type(value, @int32mask, :integer32)
 	end
 
 	def encode(ipaddress, :ipaddr) do
 	end
 
 	def encode(value, :counter32) do
+		encode_integer_type(value, @int32mask, :counter32)
+	end
+
+	def encode(value, :unsigned32) when value <= @int32max do
+		encode_integer_type(value, @int32mask, :unsigned32)
+	end
+	def encode(_value, :unsigned32) do
+		encode_integer_type(@int32max, @int32mask, :unsigned32)
 	end
 
 	def encode(value, :gauge32) do
-	end
-
-	def encode(ticks, :timeticks) do
+		encode(value, :unsigned32)
 	end
 	
+	def encode(ticks, :timeticks) do
+	end
+
 	def encode(value, :counter64) do
+		encode_integer_type(value, @int64mask, :counter64)
 	end
 
 	def decode(<< data::binary >>) do

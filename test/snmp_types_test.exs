@@ -3,14 +3,14 @@ defmodule SNMPTypesTest do
 
 	import Snimple.SNMP.Types
 
-	test "should be able to encode an int32" do
+	test "should be able to encode an integer32" do
 		assert encode(8, :integer32) == << 2, 1, 8 >>
 		assert encode(256, :integer32) == << 2, 2, 1, 0 >>
 		assert encode(2138176743, :integer32) == << 2, 4, 127, 113, 252, 231 >>
 		assert encode(935904613, :integer32) == <<2, 4, 55, 200, 197, 101 >>
 	end
 
-	test "should be able to decode an int32 type" do
+	test "should be able to decode an integer32 type" do
 		assert decode(<< 2, 4, 127, 113, 252, 231 >>) == %{type: :integer32, length: 4, value: 2138176743}
 	end
 
@@ -41,6 +41,16 @@ defmodule SNMPTypesTest do
 	end
 
 	test "should decode gauge32 type correctly" do
+		assert decode(<< 66, 4, 255, 255, 255, 255 >>) == %{type: :gauge32, length: 4, value: 4294967295}
+	end
+
+	test "should encode unsigned32 correctly" do
+		assert encode(0, :gauge32) == << 66, 1, 0 >>
+		assert encode(4294967295, :gauge32) == << 66, 4, 255, 255, 255, 255 >>
+		assert encode(4294967296, :gauge32) == << 66, 4, 255, 255, 255, 255 >>
+	end
+
+	test "should decode unsigned32 type correctly" do
 		assert decode(<< 66, 4, 255, 255, 255, 255 >>) == %{type: :gauge32, length: 4, value: 4294967295}
 	end
 
