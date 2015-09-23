@@ -15,14 +15,15 @@ defmodule Snimple.ASN1.Types do
 	end
 
 	def encode(value, :integer) do
-		encode_integer_type(value, value, :integer)
+		value_as_bin = :binary.encode_unsigned(value)
+		<< type(:integer) >> <> encoded_data_size(value_as_bin) <> value_as_bin
 	end
 
 	def encode(value, :octetstring) do
 		<< type(:octetstring) >> <> encoded_data_size(value) <> value
 	end
 
-	def encode(_, :null), do: << type(:null) >> <> << 0 >>
+	def encode(_, :null), do: << type(:null) >> <> << byte_size(<<>>) >>
 
 	def encode(seq, :sequence) do
 		result = seq |> Enum.map(fn {value, type} -> encode(value, type) end)
