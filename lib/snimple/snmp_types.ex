@@ -53,12 +53,16 @@ defmodule Snimple.SNMP.Types do
 	def encode(centisecs, :timeticks) when centisecs <= @int32max do
 		encode_integer_type(centisecs, @int32mask, :timeticks)
 	end
-	def encode(_millisecs, :timeticks) do
+	def encode(_centisecs, :timeticks) do
 		encode_integer_type(@int32max, @int32mask, :timeticks)
 	end
 
 	def encode(value, :counter64) do
 		encode_integer_type(value, @int64mask, :counter64)
+	end
+
+	def encode(legacy, :opaque) do
+		<< snmp_type(:opaque) >> <> ASN1.encoded_data_size(legacy) <> legacy
 	end
 
 	def decode(<< data::binary >>) do

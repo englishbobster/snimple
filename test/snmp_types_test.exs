@@ -65,7 +65,7 @@ defmodule SNMPTypesTest do
 	end
 
 	test "should encode opaque correctly" do
-		assert true == false
+		assert encode(<< 1, 2 , 3, 4 >> <> "test" , :opaque) == << 68, 8, 1, 2, 3, 4, 116, 101, 115, 116 >>
 	end
 
 	test "should decode the opaque type correctly" do
