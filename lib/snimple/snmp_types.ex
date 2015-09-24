@@ -49,8 +49,12 @@ defmodule Snimple.SNMP.Types do
 	def encode(value, :gauge32) do
 		encode(value, :unsigned32)
 	end
-	
-	def encode(ticks, :timeticks) do
+
+	def encode(centisecs, :timeticks) when centisecs <= @int32max do
+		encode_integer_type(centisecs, @int32mask, :timeticks)
+	end
+	def encode(_millisecs, :timeticks) do
+		encode_integer_type(@int32max, @int32mask, :timeticks)
 	end
 
 	def encode(value, :counter64) do

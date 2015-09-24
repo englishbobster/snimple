@@ -57,7 +57,7 @@ defmodule SNMPTypesTest do
 	test "should encode timeticks correctly" do
 		assert encode(0, :timeticks) == << 67, 1, 0 >>
 		assert encode(4294967295, :timeticks) == << 67, 4, 255, 255, 255, 255 >>
-		assert encode(4294967296, :timeticks) == << 67, 1, 0 >>
+		assert encode(4294967296, :timeticks) == << 67, 4, 255, 255, 255, 255 >>
 	end
 
 	test "should decode timeticks type correctly" do
@@ -67,11 +67,11 @@ defmodule SNMPTypesTest do
 	test "should encode opaque correctly" do
 		assert true == false
 	end
-	
+
 	test "should decode the opaque type correctly" do
 		assert true == false
 	end
-	
+
 	test "should encode counter64 correctly" do
 		assert encode(0, :counter64) == << 70, 1, 0 >>
 		assert encode(18446744073709551615, :counter64) == << 70, 8, 255, 255, 255, 255, 255, 255, 255, 255 >>
