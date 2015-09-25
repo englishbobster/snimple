@@ -8,9 +8,13 @@ defmodule Snimple.SNMP.Types do
 	@int64mask (0xFFFFFFFFFFFFFFFF)
 	@int64max  (18446744073709551615)
 
+	defmacro asn1_integer_type do
+		quote do ASN1.type(:integer) end
+	end
+
 	defp snmp_type_identifier do
 		%{
-			integer32:   0x02, #same as ASN1 integer type
+			integer32:   asn1_integer_type,
 			ipaddr:      0x40,
 			counter32:   0x41,
 			unsigned32:  0x42,

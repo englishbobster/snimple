@@ -1,7 +1,7 @@
 defmodule Snimple.ASN1.Types do
 	use Bitwise
 
-	defp type_identifier do
+	def type_identifier do
 		%{
 			integer:     0x02,
 		  octetstring: 0x04,
@@ -10,7 +10,7 @@ defmodule Snimple.ASN1.Types do
 			sequence:    0x30,
 		}
 	end
-	defp type(id) when is_atom(id) do
+	def type(id) when is_atom(id) do
 		Dict.get(type_identifier, id)
 	end
 
