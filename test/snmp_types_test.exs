@@ -20,7 +20,7 @@ defmodule SNMPTypesTest do
 	end
 
 	test "should decode an ipaddress type correctly" do
-		assert decode (<< 64, 4, 172, 21, 1, 54 >> ) == %{type: :ipaddr, length: 4, value: "172.21.1.54"}
+		assert decode( << 64, 4, 172, 21, 1, 54 >> ) == %{type: :ipaddr, length: 4, value: "172.21.1.54"}
 	end
 
 	test "should encode counter32 correctly" do
@@ -44,16 +44,6 @@ defmodule SNMPTypesTest do
 		assert decode(<< 66, 4, 255, 255, 255, 255 >>) == %{type: :gauge32, length: 4, value: 4294967295}
 	end
 
-	test "should encode unsigned32 correctly" do
-		assert encode(0, :gauge32) == << 66, 1, 0 >>
-		assert encode(4294967295, :gauge32) == << 66, 4, 255, 255, 255, 255 >>
-		assert encode(4294967296, :gauge32) == << 66, 4, 255, 255, 255, 255 >>
-	end
-
-	test "should decode unsigned32 type correctly" do
-		assert decode(<< 66, 4, 255, 255, 255, 255 >>) == %{type: :gauge32, length: 4, value: 4294967295}
-	end
-
 	test "should encode timeticks correctly" do
 		assert encode(0, :timeticks) == << 67, 1, 0 >>
 		assert encode(4294967295, :timeticks) == << 67, 4, 255, 255, 255, 255 >>
@@ -69,7 +59,7 @@ defmodule SNMPTypesTest do
 	end
 
 	test "should decode the opaque type correctly" do
-		assert true == false
+		assert decode(<< 68, 8, 1, 2, 3, 4, 116, 101, 115, 116 >>) == %{type: :opaque, length: 8, value: << 1, 2, 3, 4, 116, 101, 115, 116 >>}
 	end
 
 	test "should encode counter64 correctly" do

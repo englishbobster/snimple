@@ -14,11 +14,10 @@ defmodule Snimple.SNMP.Types do
 
 	defp snmp_type_identifier do
 		%{
-			integer32:   asn1_integer_type,
+			integer32:   0x02, #indistinguishable from ASN1 integer,
 			ipaddr:      0x40,
 			counter32:   0x41,
-			unsigned32:  0x42,
-			gauge32:     0x42, #indistinguishable from unsigned32
+			gauge32:     0x42,
 			timeticks:   0x43,
 			opaque:      0x44,
 			counter64:   0x46
@@ -43,15 +42,11 @@ defmodule Snimple.SNMP.Types do
 		encode_integer_type(value, @int32mask, :counter32)
 	end
 
-	def encode(value, :unsigned32) when value <= @int32max do
-		encode_integer_type(value, @int32mask, :unsigned32)
+	def encode(value, :gauge32) when value <= @int32max do
+		encode_integer_type(value, @int32mask, :gauge32)
 	end
-	def encode(_value, :unsigned32) do
-		encode_integer_type(@int32max, @int32mask, :unsigned32)
-	end
-
-	def encode(value, :gauge32) do
-		encode(value, :unsigned32)
+	def encode(_value, :gauge32) do
+		encode_integer_type(@int32max, @int32mask, :gauge32)
 	end
 
 	def encode(centisecs, :timeticks) when centisecs <= @int32max do
@@ -69,9 +64,43 @@ defmodule Snimple.SNMP.Types do
 		<< snmp_type(:opaque) >> <> ASN1.encoded_data_size(legacy) <> legacy
 	end
 
-	def decode(<< data::binary >>) do
+	def decode(<< 0x02, data::binary >>) do
+		{len, data} = ASN1.decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		%{type: :integer32,
+			length: len,
+			value: :binary.decode_unsigned(data)
+			}
 	end
 
+	def decode(<< 0x40, data::binary >>) do
+		{len, data} = ASN1.decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		ip = data |> :binary.bin_to_list |> Enum.join(".")
+		%{type: :ipaddr,
+		  length: len,
+			value: ip
+			}
+	end
+
+	def decode(<< 0x41, data::binary >>) do
+		{len, data} = ASN1.decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		%{type: :counter32,
+			length: len,
+			value: :binary.decode_unsigned(data)
+			}
+	end
+	
+	def decode(<< 0x42, data::binary >>) do
+		{len, data} = ASN1.decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		%{type: :gauge32,
+			length: len,
+			value: :binary.decode_unsigned(data)
+			}
+	end
+	
 	def encode_integer_type(value, mask, t) when is_atom(t) do
 		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
 		<< snmp_type(t) >> <> ASN1.encoded_data_size(value_as_bin) <> value_as_bin
