@@ -1,5 +1,5 @@
 defmodule Snimple.SnmpPdus do
-	import Snimple.BER
+	import Snimple.SNMP.Types
 
 	def pdu_identifier do
 		%{
@@ -68,18 +68,18 @@ defmodule Snimple.SnmpPdus do
 	end
 
 	def var_bind(value, oid) do
-		ber_encode(oid, :oid) <> value |> ber_encode(:sequence)
+		encode(oid, :oid) <> value |> encode(:sequence)
 	end
 
 	def var_bind_list(tuple_list) do
 		tuple_list
 		|> Enum.map(fn {oid, value} -> var_bind(value, oid) end)
 		|> Enum.join
-		|> ber_encode(:sequence)
+		|> encode(:sequence)
 	end
 
-	def request_id(id), do: ber_encode(id, :int32)
-	def error_status(status), do: ber_encode(status, :int32)
-	def error_index(index), do: ber_encode(index, :int32)
+	def request_id(id), do: encode(id, :int32)
+	def error_status(status), do: encode(status, :int32)
+	def error_index(index), do: encode(index, :int32)
 
 end
