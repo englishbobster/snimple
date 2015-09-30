@@ -61,23 +61,14 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	def decode(<< 0x02, data::binary >>) do
-#		_decode_internal(data, :integer32, :binary.decode_unsigned/1)
-		{len, data} = ASN1.decoded_data_size(data)
-		data = :binary.part(data, 0, len)
-		%{type: :integer32,
-			length: len,
-			value: :binary.decode_unsigned(data)
-			}
+		_decode_internal(data, :integer32, &:binary.decode_unsigned/1)
 	end
 
 	def decode(<< 0x40, data::binary >>) do
-		{len, data} = ASN1.decoded_data_size(data)
-		data = :binary.part(data, 0, len)
-		ip = data |> :binary.bin_to_list |> Enum.join(".")
-		%{type: :ipaddr,
-		  length: len,
-			value: ip
-			}
+		_decode_internal(data, :ipaddr, &_data_to_ip/1)
+	end
+	defp _data_to_ip(data) do
+		data |> :binary.bin_to_list |> Enum.join(".")
 	end
 
 	def decode(<< 0x41, data::binary >>) do
