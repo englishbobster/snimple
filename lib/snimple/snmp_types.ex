@@ -100,6 +100,15 @@ defmodule Snimple.SNMP.Types do
 			value: :binary.decode_unsigned(data)
 			}
 	end
+
+	def decode(<< 0x43, data::binary >>) do
+		{len, data} = ASN1.decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		%{type: :timeticks,
+			length: len,
+			value: ""
+			}
+	end
 	
 	def encode_integer_type(value, mask, t) when is_atom(t) do
 		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
