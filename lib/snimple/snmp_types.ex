@@ -98,29 +98,35 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	def decode(<< 0x43, data::binary >>) do
-		{len, data} = ASN1.decoded_data_size(data)
-		data = :binary.part(data, 0, len)
-		%{type: :timeticks,
-			length: len,
-			value: :binary.decode_unsigned(data)
-			}
+		_decode_internal(data, :timeticks, &:binary.decode_unsigned/1)
+#		{len, data} = ASN1.decoded_data_size(data)
+#		data = :binary.part(data, 0, len)
+#		%{type: :timeticks,
+#			length: len,
+#			value: :binary.decode_unsigned(data)
+#			}
 	end
 
 	def decode(<< 0x44, data::binary >>) do
-		{len, data} = ASN1.decoded_data_size(data)
-		data = :binary.part(data, 0, len)
-		%{type: :opaque,
-			length: len,
-			value: data
-			}
+		_decode_internal(data, :opaque, fn x -> x end)
+#		{len, data} = ASN1.decoded_data_size(data)
+#		data = :binary.part(data, 0, len)
+#		%{type: :opaque,
+#			length: len,
+#			value: data
+#			}
 	end
 
 	def decode(<< 0x46, data::binary >>) do
+		_decode_internal(data, :counter64, &:binary.decode_unsigned/1)
+	end
+
+	defp _decode_internal(data, type, decode_func) do
 		{len, data} = ASN1.decoded_data_size(data)
 		data = :binary.part(data, 0, len)
-		%{type: :counter64,
+		%{type: type,
 			length: len,
-			value: :binary.decode_unsigned(data)
+			value: decode_func.(data)
 			}
 	end
 
