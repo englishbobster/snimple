@@ -51,7 +51,7 @@ defmodule SNMPTypesTest do
 	end
 
 	test "should decode timeticks type correctly" do
-		assert decode(<< 67, 4, 255, 255, 255, 255 >>) == %{type: :timeticks, length: 4, value: "some time"}
+		assert decode(<< 67, 4, 255, 255, 255, 255 >>) == %{type: :timeticks, length: 4, value: 4294967295}
 	end
 
 	test "should encode opaque correctly" do

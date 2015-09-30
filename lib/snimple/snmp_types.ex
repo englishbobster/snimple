@@ -91,7 +91,7 @@ defmodule Snimple.SNMP.Types do
 			value: :binary.decode_unsigned(data)
 			}
 	end
-	
+
 	def decode(<< 0x42, data::binary >>) do
 		{len, data} = ASN1.decoded_data_size(data)
 		data = :binary.part(data, 0, len)
@@ -106,10 +106,28 @@ defmodule Snimple.SNMP.Types do
 		data = :binary.part(data, 0, len)
 		%{type: :timeticks,
 			length: len,
-			value: ""
+			value: :binary.decode_unsigned(data)
 			}
 	end
-	
+
+	def decode(<< 0x44, data::binary >>) do
+		{len, data} = ASN1.decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		%{type: :opaque,
+			length: len,
+			value: data
+			}
+	end
+
+	def decode(<< 0x46, data::binary >>) do
+		{len, data} = ASN1.decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		%{type: :counter64,
+			length: len,
+			value: :binary.decode_unsigned(data)
+			}
+	end
+
 	def encode_integer_type(value, mask, t) when is_atom(t) do
 		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
 		<< snmp_type(t) >> <> ASN1.encoded_data_size(value_as_bin) <> value_as_bin
