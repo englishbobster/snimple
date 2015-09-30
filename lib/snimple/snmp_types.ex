@@ -84,7 +84,7 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	def decode(<< 0x44, data::binary >>) do
-		_decode_internal(data, :opaque, fn x -> x end)
+		_decode_internal(data, :opaque, &(&1))
 	end
 
 	def decode(<< 0x46, data::binary >>) do
