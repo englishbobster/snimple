@@ -8,7 +8,7 @@ defmodule Snimple.SNMP.Types do
 	@int64mask (0xFFFFFFFFFFFFFFFF)
 	@int64max  (18446744073709551615)
 
-	defp snmp_type_identifier do
+	def snmp_type_identifier do
 		%{
 			integer32:   0x02, #indistinguishable from ASN1 integer,
 			ipaddr:      0x40,
@@ -19,7 +19,7 @@ defmodule Snimple.SNMP.Types do
 			counter64:   0x46
 		 }
 	end
-	defp snmp_type(id) when is_atom(id) do
+	def snmp_type(id) when is_atom(id) do
 		Dict.get(snmp_type_identifier, id)
 	end
 

@@ -120,6 +120,19 @@ defmodule ASN1TypesTest do
 		assert encode([{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence) ==  << 48, 19 >> <>  oid <> value
 	end
 
+	test "sequence should be able to contain at least one sequence" do
+		value = encode(0, :null)
+		oid = encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
+		assert encode([{[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence}], :sequence) == << 48, 21 >> <> << 48, 19 >> <>  oid <> value
+	end
+
+	test "sequence should be able to contain more than one sequence" do
+		value = encode(0, :null)
+		oid = encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
+		assert encode([{[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence}, {[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence}], :sequence) ==
+	<< 48, 42 >> <> << 48, 19 >> <>  oid <> value <> << 48, 19 >> <>  oid <> value
+	end
+
 	test "should be able to decode a sequence binary correctly" do
 		expected_result = %{type: :sequence,
 												length: 19,

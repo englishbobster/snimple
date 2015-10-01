@@ -46,20 +46,25 @@ defmodule Snimple.SnmpPdus do
 	end
 
 	def encode_pdu(vblist, requid, :snmpget) do
-	_encode_pdu(vblist, requid, error(:noError), 0, :snmpget)
+		_encode_pdu(vblist, requid, error(:noError), 0, :snmpget)
 	end
+
 	def encode_pdu(vblist, requid, errst, errin, :snmpresponse) do
 		_encode_pdu(vblist, requid, errst, errin, :snmpresponse)
 	end
+
 	def encode_pdu(vblist, requid, :snmpgetnext) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpgetnext)
 	end
+
 	def encode_pdu(vblist, requid, :snmpset) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpset)
 	end
+
 	def encode_pdu(vblist, requid, :snmptrap) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmptrap)
 	end
+
 	defp _encode_pdu(vblist, requid, errst, errin, type) do
 		body = request_id(requid)
 		<> error_status(errst)
@@ -68,14 +73,18 @@ defmodule Snimple.SnmpPdus do
 		<< pdu_id(type) >> <> << byte_size(body) >>  <> body
 	end
 
-	def var_bind(value, oid) do
-		ASN1.encode(oid, :oid) <> value |> ASN1.encode(:sequence)
+	def var_bind({oid, {value, type}} = vb) do
+#		cond do
+#			Dict.has_key?(ASN1.type_identifier, type) -> encoded_value = ASN1.encode(value, type)
+#			Dict.has_key?(SNMP.snmp_type_identifier, type) -> encoded_value = SNMP.encode(value, type)
+#		end
+#		ASN1.encode(oid, :oid) <> encoded_value |> ASN1.encode(:sequence)
+		ASN1.encode([{oid, :oid},{value, type}, :sequence]) 
 	end
 
-	def var_bind_list(tuple_list) do
-		tuple_list
-		|> Enum.map(fn {oid, value} -> var_bind(value, oid) end)
-		|> Enum.join
+	def var_bind_list(vb_list) do
+		vb_list
+		|> Enum.map(fn vb -> var_bind(vb) end)
 		|> ASN1.encode(:sequence)
 	end
 
