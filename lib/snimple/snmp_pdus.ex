@@ -1,5 +1,6 @@
 defmodule Snimple.SnmpPdus do
-	import Snimple.SNMP.Types
+	alias Snimple.SNMP.Types, as: SNMP
+	alias Snimple.ASN1.Types, as: ASN1
 
 	def pdu_identifier do
 		%{
@@ -68,18 +69,18 @@ defmodule Snimple.SnmpPdus do
 	end
 
 	def var_bind(value, oid) do
-		encode(oid, :oid) <> value |> encode(:sequence)
+		ASN1.encode(oid, :oid) <> value |> ASN1.encode(:sequence)
 	end
 
 	def var_bind_list(tuple_list) do
 		tuple_list
 		|> Enum.map(fn {oid, value} -> var_bind(value, oid) end)
 		|> Enum.join
-		|> encode(:sequence)
+		|> ASN1.encode(:sequence)
 	end
 
-	def request_id(id), do: encode(id, :int32)
-	def error_status(status), do: encode(status, :int32)
-	def error_index(index), do: encode(index, :int32)
+	def request_id(id), do: SNMP.encode(id, :integer32)
+	def error_status(status), do: SNMP.encode(status, :integer32)
+	def error_index(index), do: SNMP.encode(index, :integer32)
 
 end

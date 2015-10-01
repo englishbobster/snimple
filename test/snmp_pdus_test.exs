@@ -63,13 +63,13 @@ defmodule SNMPGetTest do
 		[
 			{ "1.3.6.1.4.1.2680.1.2.7.3.2.0", SNMP.encode(100, :integer32) },
 			{ "1.3.6.1.4.1.2680.1.2.7.3.2.1", ASN1.encode("octetstring", :octetstring) },
-			{ "1.3.0.1.4.1.2680.1.2.7.3.2.19865.0", ASN1.encode(:null) },
+			{ "1.3.0.1.4.1.2680.1.2.7.3.2.19865.0", ASN1.encode(0, :null) },
 			{".1.3.6.1.4.1.8708.2.4.2.2.1.1.72.1667", SNMP.encode(10557, :integer32) }
 		]
 	end
 
 	test "should be able to construct an snmpget pdu" do
-		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253", ASN1.encode(:null)}], 2138176743, :snmpget)
+		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253", ASN1.encode(0, :null)}], 2138176743, :snmpget)
 		assert encoded_pdu == example_snmpget_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmpget)
 	end
@@ -81,7 +81,7 @@ defmodule SNMPGetTest do
 	end
 
 	test "should be able to construct an snmpgetnext pdu" do
-		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.21", ASN1.encode(:null)}], 1601778559, :snmpgetnext)
+		encoded_pdu = encode_pdu([{"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.21", ASN1.encode(0, :null)}], 1601778559, :snmpgetnext)
 		assert encoded_pdu == example_snmpgetnext_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmpgetnext)
 	end
@@ -117,7 +117,7 @@ defmodule SNMPGetTest do
 	end
 
 	test "should be able to make a variable binding" do
-		assert ASN1.encode(:null) |> var_bind("1.3.1.1.1") == << 48, 8, 6, 4, 43, 1, 1, 1, 5, 0 >>
+		assert ASN1.encode(0, :null) |> var_bind("1.3.1.1.1") == << 48, 8, 6, 4, 43, 1, 1, 1, 5, 0 >>
 		assert ASN1.encode("octetstring", :octetstring) |> var_bind("1.3.6.1.4.1.2680.1.2.7.3.2.0") == << 48, 28 >>
 	      <> << 6, 13, 43, 6, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 0 >>
 	      <> <<4, 11, 111, 99, 116, 101, 116, 115, 116, 114, 105, 110, 103>>
