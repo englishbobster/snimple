@@ -11,10 +11,10 @@ defmodule Snimple.SNMP.Types do
 	The module defines: 
 	
   * The types used in encoding and decoding SNMP messages. 
-    These are separated according to ASN1 basic types and 
+    These are separated according to ASN.1 basic types and 
     SNMP specific types.
   
-  * The ASN1 basic encoding rules (BER) used for SNMP encoding 
+  * The ASN.1 basic encoding rules (BER) used for SNMP encoding 
     and decoding of the defined types.
 
   The types supported can be listed using one of the functions:
@@ -43,7 +43,7 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	@doc ~S"""
-	Lists the supported ASN1 types used by SNMP.
+	Lists the supported ASN.1 types used by SNMP.
 
  ## Example
       iex> Snimple.SNMP.Types.list_asn1_types
@@ -81,7 +81,7 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	@doc ~S"""
-	Lists all the supported SNMP types, both derived and ASN1.
+	Lists all the supported SNMP types, both derived and ASN.1.
 
  ## Example
       iex> Snimple.SNMP.Types.list_all_types
@@ -91,7 +91,47 @@ defmodule Snimple.SNMP.Types do
 	def list_all_types do
 		List.flatten([list_asn1_types, list_snmp_types])
 	end
-		
+
+	@doc ~S"""
+	Encodes the given `value` and `type` and produces a binary representation according to the ASN.1 basic encoding rules.
+	The result is a sequence of bytes: 
+
+  * The first byte is the id byte representing the type.
+  * The second is the size byte of the coming encoded value.
+  * The rest is the encoded value itself.
+
+	Depending on `type`, the expected values will be as follows:
+
+  * `:octetstring`, `:opaque` -> `value` shall be a binary string.
+  * `:null` -> `value` will be ignored.
+  * `:ipaddr` -> `value` shall be a string representation of an ip address e.g. "127.0.0.1"
+  * `:integer32`, `:counter32`, `:gauge32`, `:timeticks`, `:counter64` -> `value` shall be an integer.
+  * `:oid` -> `value` shall be a string representation of the oid e.g. ".1.3.4.6.567.4.4.1.1.2". The leading "." is not mandatory.
+  * `:sequence` -> The sequence type is basically a wrapper type for all the other types. The `value` shall be a list of tuples defining
+  values and types to be wrapped. 
+
+  e.g. [{"127.0.0.1", :ipaddr}, {".1.2.3.4.5.6", :oid}, {"Hello", :octetstring}]
+
+ ## Examples
+      iex> Snimple.SNMP.Types.encode("Hello", :octetstring)
+      <<4, 5, 72, 101, 108, 108, 111>>
+
+      iex> Snimple.SNMP.Types.encode(0, :null)
+      <<5, 0>>
+
+      iex> Snimple.SNMP.Types.encode("127.0.0.1", :ipaddr)
+      <<64, 4, 127, 0, 0, 1>>
+
+      iex> Snimple.SNMP.Types.encode(1337, :gauge32)
+      <<66, 2, 5, 57>>
+
+      iex> Snimple.SNMP.Types.encode(".1.3.34.3.5.6.7.8", :oid) 
+      <<6, 7, 43, 34, 3, 5, 6, 7, 8>>
+
+      iex> Snimple.SNMP.Types.encode([{"127.0.0.1", :ipaddr}, {".1.2.3.4.5.6", :oid}, {"Hello", :octetstring}], :sequence) 
+      <<48, 20, 64, 4, 127, 0, 0, 1, 6, 5, 42, 3, 4, 5, 6, 4, 5, 72, 101, 108, 108, 111>>
+
+	"""	
 	def encode(value, :octetstring) do
 		<< asn1_type(:octetstring) >> <> encoded_data_size(value) <> value
 	end
