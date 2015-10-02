@@ -217,6 +217,29 @@ defmodule Snimple.SNMP.Types do
 			}
 	end
 
+	@doc ~S"""
+	The `arg` is a binary, usually a type from the payload of a SNMP PDU. The given binary data is decoded 
+  and a map containing the decoded fields is returned.
+
+	The returned map contains the 3 keys:
+  
+  * :type - the decoded ASN.1 or SNMP derived type.
+  * :length - the length of the value field.
+  * :value -  the decoded value.
+
+
+  The value field will be a string for types such as `:ipaddr`, `:oid`,  and `:octetstring`, otherwise integers.
+  The value of a decoded `:sequence` will result in a list of maps containing the decoded types in the sequence. 
+
+ ## Example
+
+      iex> Snimple.SNMP.Types.decode(<<48, 20, 64, 4, 127, 0, 0, 1, 6, 5, 42, 3, 4, 5, 6, 4, 5, 72, 101, 108, 108, 111>>)  
+      %{length: 20, type: :sequence,
+         value: [%{length: 4, type: :ipaddr, value: "127.0.0.1"},
+         %{length: 5, type: :oid, value: ".1.2.3.4.5.6"},
+         %{length: 5, type: :octetstring, value: "Hello"}]}
+
+	"""	
 	def decode(<< 0x05, data::binary >>) do
 		{len, _} = decoded_data_size(data)
 		%{type: :null,
