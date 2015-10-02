@@ -34,11 +34,6 @@ defmodule Snimple.SNMP.Types do
 		Dict.get(snmp_type_identifier, id)
 	end
 
-	def encode(value, :integer) do
-		value_as_bin = :binary.encode_unsigned(value)
-		<< asn1_type(:integer) >> <> encoded_data_size(value_as_bin) <> value_as_bin
-	end
-
 	def encode(value, :octetstring) do
 		<< asn1_type(:octetstring) >> <> encoded_data_size(value) <> value
 	end
@@ -114,15 +109,6 @@ defmodule Snimple.SNMP.Types do
 	def encode(legacy, :opaque) do
 		<< snmp_type(:opaque) >> <> encoded_data_size(legacy) <> legacy
 	end
-
-#	def decode(<< 0x02, data::binary >>) do
-#		{len, data} = decoded_data_size(data)
-#		data = :binary.part(data, 0, len)
-#		%{type: :integer,
-#			length: len,
-#			value: :binary.decode_unsigned(data)
-#		 }
-#	end
 
 	def decode(<< 0x04, data::binary >>) do
 		{len, data} = decoded_data_size(data)

@@ -10,9 +10,9 @@ defmodule ASN1TypesTest do
 
 	defp test_oids do
 	%{
-		oid_1: {".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16",    << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >>},       #an oid
-		oid_2: {".1.3.6.1.4.1.8708.2.4.2.2.1.1.72.1667", << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 2, 1, 1, 72, 141, 3 >>},  #greater than 127 at the end
-		oid_3: {".1.3.6.1.4.1.8708.2.4.2.0.1.1.72.1667", << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 0, 1, 1, 72, 141, 3 >>},  #zero somewhere in the middle
+		oid_1: {".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16",    << 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16 >>},        #an oid
+		oid_2: {".1.3.6.1.4.1.8708.2.4.2.2.1.1.72.1667", << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 2, 1, 1, 72, 141, 3 >>},   #greater than 127 at the end
+		oid_3: {".1.3.6.1.4.1.8708.2.4.2.0.1.1.72.1667", << 6, 16, 43, 6, 1, 4, 1, 196, 4, 2, 4, 2, 0, 1, 1, 72, 141, 3 >>},   #zero somewhere in the middle
 		oid_4: {".1.3.6.1.4.1.19865.1.2.1.6.0",          << 6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>>},             #zero at the end
 		oid_5: {"1.3.6.1.4.1.19865.1.2.1.6.0",           << 6, 13, 43, 6, 1, 4, 1, 129, 155, 25, 1, 2, 1, 6, 0>>},             #no . as start
 		oid_6: {"1.3.0.1.4.1.2680.1.2.7.3.2.19865.0",	   << 6, 16, 43, 0, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 129, 155, 25, 0 >>}#unholy combo
@@ -37,13 +37,6 @@ defmodule ASN1TypesTest do
 		assert decoded_data_size(<< 10 >> <> binary_size_small) == {10, binary_size_small}
 		assert decoded_data_size(<< 0x81, 250 >> <> binary_size_large)== {250, binary_size_large}
 		assert decoded_data_size(<< 0x82, 1 , 244 >> <> binary_size_mega) == {500, binary_size_mega}
-	end
-
-	test "should be able to encode any size integer" do
-		assert encode(0, :integer) == << 2, 1, 0 >>
-		assert encode(256, :integer) == << 2, 2, 1, 0 >>
-		assert encode(2138176743, :integer) == << 2, 4, 127, 113, 252, 231 >>
-		assert encode(9595959595959595999, :integer) == <<2, 8, 133, 43, 178, 105, 52, 44, 51, 223>>
 	end
 
 	test "should be able to encode an octetstring" do
