@@ -23,6 +23,11 @@ defmodule SnmpPdusTest do
 		pkt
 	end
 
+	defp example_snmpbulkget_pdu do
+		{:ok, pkt} = Base.decode16("052102041788f9b502010002010a30133011060d2b06010401c4040201020101000500", [case: :lower])
+		pkt
+	end
+	
 	defp example_snmptrap_pdu do
 		{:ok, pkt} = Base.decode16("078201b9020437c8c565020100020100308201a9301006082b06010201010300430433" <>
 			"fcad3f301b060a2b060106030101040100060d2b06010401c404020102030007301406" <>
@@ -113,6 +118,12 @@ defmodule SnmpPdusTest do
 		encoded_pdu = encode_pdu(vbl, 935904613, :snmptrap) 
 		assert encoded_pdu == example_snmptrap_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmptrap)
+	end
+
+	test "should be able to construct an snmpgetbulk pdu" do
+		encoded_pdu = encode_pdu([ {"1.3.6.1.4.1.8708.2.1.2.1.1.0", {0, :null} }], 394852789, 0, 10, :snmpgetbulk)
+		assert encoded_pdu == example_snmpbulkget_pdu
+		assert_correct_pdu_identifier(encoded_pdu, :snmpgetbulk)
 	end
 
 	test "should be able to make a variable binding of any type" do

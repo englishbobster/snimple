@@ -17,6 +17,10 @@ defmodule Snimple.SnmpPdus do
 		Dict.get(pdu_identifier, id)
 	end
 
+	def list_supported_pdus do
+		Dict.keys(pdu_identifier)
+	end
+
 	def error_status do
 		%{
 			noError:              0x00,
@@ -44,6 +48,10 @@ defmodule Snimple.SnmpPdus do
 		Dict.get(error_status, status)
 	end
 
+	def list_possible_errors do
+		Dict.keys(error_status)
+	end
+
 	def encode_pdu(vblist, requid, :snmpget) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpget)
 	end
@@ -64,12 +72,20 @@ defmodule Snimple.SnmpPdus do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmptrap)
 	end
 
-	defp _encode_pdu(vblist, requid, errst, errin, type) do
+	def encode_pdu(vblist, requid, nonrepeat, maxreps, :snmpgetbulk) do
+		body = request_id(requid)
+		<> non_repeaters(nonrepeat)
+		<> max_repetitions(maxreps)
+		<> var_bind_list(vblist)
+		<< pdu_id(:snmpgetbulk) >> <> SNMP.encoded_data_size(body) <> body
+	end
+
+  defp _encode_pdu(vblist, requid, errst, errin, type) do
 		body = request_id(requid)
 		<> error_status(errst)
 		<> error_index(errin)
 		<> var_bind_list(vblist)
-		<< pdu_id(type) >> <> SNMP.encoded_data_size(body)  <> body
+		<< pdu_id(type) >> <> SNMP.encoded_data_size(body) <> body
 	end
 
 	def var_bind({oid, {value, type}} = vb) do
@@ -83,6 +99,8 @@ defmodule Snimple.SnmpPdus do
 	end
 
 	def request_id(id), do: SNMP.encode(id, :integer32)
+	def non_repeaters(nrp), do: SNMP.encode(nrp, :integer32)
+	def max_repetitions(max_reps), do: SNMP.encode(max_reps, :integer32)
 	def error_status(status), do: SNMP.encode(status, :integer32)
 	def error_index(index), do: SNMP.encode(index, :integer32)
 
