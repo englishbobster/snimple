@@ -46,14 +46,6 @@ defmodule ASN1TypesTest do
 		assert encode(9595959595959595999, :integer) == <<2, 8, 133, 43, 178, 105, 52, 44, 51, 223>>
 	end
 
-	test "should be able to decode any size integer type" do
-		assert decode(<< 2, 1, 0 >>) == %{type: :integer, length: 1, value: 0}
-		assert decode(<< 2, 2, 1, 0 >>) == %{type: :integer, length: 2, value: 256}
-		assert decode(<< 2, 4, 127, 113, 252, 231 >>) == %{type: :integer, length: 4, value: 2138176743}
-		assert decode(<<2, 8, 133, 43, 178, 105, 52, 44, 51, 223>>) == %{type: :integer, length: 8, value: 9595959595959595999}
-		assert decode(<<2, 8, 133, 43, 178, 105, 52, 44, 51, 223>> <> "too long") == %{type: :integer, length: 8, value: 9595959595959595999}
-	end
-
 	test "should be able to encode an octetstring" do
 		test_string_size = byte_size(test_string)
 		assert encode(test_string, :octetstring) == << 4 >> <> << test_string_size >> <> test_string

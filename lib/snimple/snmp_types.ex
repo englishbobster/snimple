@@ -115,14 +115,14 @@ defmodule Snimple.SNMP.Types do
 		<< snmp_type(:opaque) >> <> encoded_data_size(legacy) <> legacy
 	end
 
-	def decode(<< 0x02, data::binary >>) do
-		{len, data} = decoded_data_size(data)
-		data = :binary.part(data, 0, len)
-		%{type: :integer,
-			length: len,
-			value: :binary.decode_unsigned(data)
-		 }
-	end
+#	def decode(<< 0x02, data::binary >>) do
+#		{len, data} = decoded_data_size(data)
+#		data = :binary.part(data, 0, len)
+#		%{type: :integer,
+#			length: len,
+#			value: :binary.decode_unsigned(data)
+#		 }
+#	end
 
 	def decode(<< 0x04, data::binary >>) do
 		{len, data} = decoded_data_size(data)
