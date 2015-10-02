@@ -21,7 +21,7 @@ defmodule Snimple.SNMP.Types do
 
 	def snmp_type_identifier do
 		%{
-			integer32:   0x02, #indistinguishable from ASN1 integer,
+			integer32:   asn1_type(:integer),
 			ipaddr:      0x40,
 			counter32:   0x41,
 			gauge32:     0x42,

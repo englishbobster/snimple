@@ -110,7 +110,7 @@ defmodule SnmpPdusTest do
 		]
 		encoded_vbl = vbl |> var_bind_list()
 		assert encoded_vbl == example_var_bind_list 
-		encoded_pdu = encode_pdu(vbl, 935904613, :snmptrap)
+		encoded_pdu = encode_pdu(vbl, 935904613, :snmptrap) 
 		assert encoded_pdu == example_snmptrap_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmptrap)
 	end

@@ -69,21 +69,16 @@ defmodule Snimple.SnmpPdus do
 		<> error_status(errst)
 		<> error_index(errin)
 		<> var_bind_list(vblist)
-		<< pdu_id(type) >> <> << byte_size(body) >>  <> body
+		<< pdu_id(type) >> <> SNMP.encoded_data_size(body)  <> body
 	end
 
 	def var_bind({oid, {value, type}} = vb) do
-#		cond do
-#			Dict.has_key?(ASN1.type_identifier, type) -> encoded_value = ASN1.encode(value, type)
-#			Dict.has_key?(SNMP.snmp_type_identifier, type) -> encoded_value = SNMP.encode(value, type)
-#		end
-#		ASN1.encode(oid, :oid) <> encoded_value |> ASN1.encode(:sequence)
 		SNMP.encode([{oid, :oid},{value, type}], :sequence) 
 	end
 
 	def var_bind_list(vb_list) do
 		vb_list
-		|> Enum.map(fn vb -> var_bind(vb) end)
+		|> Enum.map(fn {oid, {value, type}} -> {[{oid, :oid}, {value, type}],:sequence} end)
 		|> SNMP.encode(:sequence)
 	end
 
