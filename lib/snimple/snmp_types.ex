@@ -6,7 +6,30 @@ defmodule Snimple.SNMP.Types do
 	@int64mask (0xFFFFFFFFFFFFFFFF)
 	@int64max  (18446744073709551615)
 
-	def asn1_type_identifier do
+	@moduledoc """
+	This SNMP imlementation should be compatible with SNMPv1 and SNMPv2c.
+	The module defines: 
+	
+  * The types used in encoding and decoding SNMP messages. 
+    These are separated according to ASN1 basic types and 
+    SNMP specific types.
+  
+  * The ASN1 basic encoding rules (BER) used for SNMP encoding 
+    and decoding of the defined types.
+
+  The types supported can be listed using one of the functions:
+
+  * list_asn1_types
+
+  * list_snmp_types
+
+  * list_all_types
+
+
+  See the relevant function help.
+	"""
+	
+	defp asn1_type_identifier do
 		%{
 			integer:     0x02,
 		  octetstring: 0x04,
@@ -15,11 +38,23 @@ defmodule Snimple.SNMP.Types do
 			sequence:    0x30,
 		}
 	end
-	def asn1_type(id) when is_atom(id) do
+	defp asn1_type(id) when is_atom(id) do
 		Dict.get(asn1_type_identifier, id)
 	end
 
-	def snmp_type_identifier do
+	@doc ~S"""
+	Lists the supported ASN1 types used by SNMP.
+
+ ## Example
+      iex> Snimple.SNMP.Types.list_asn1_types
+      [:integer, :null, :octetstring, :oid, :sequence]
+
+	"""
+	def list_asn1_types do
+		Dict.keys(asn1_type_identifier)
+	end
+	
+	defp snmp_type_identifier do
 		%{
 			integer32:   asn1_type(:integer),
 			ipaddr:      0x40,
@@ -30,10 +65,33 @@ defmodule Snimple.SNMP.Types do
 			counter64:   0x46
 		 }
 	end
-	def snmp_type(id) when is_atom(id) do
+	defp snmp_type(id) when is_atom(id) do
 		Dict.get(snmp_type_identifier, id)
 	end
+	@doc ~S"""
+	Lists the supported SNMP derived types used by SNMP.
 
+ ## Example
+      iex> Snimple.SNMP.Types.list_snmp_types
+      [:counter32, :counter64, :gauge32, :integer32, :ipaddr, :opaque, :timeticks]
+
+	"""	
+	def list_snmp_types do
+		Dict.keys(snmp_type_identifier)
+	end
+
+	@doc ~S"""
+	Lists all the supported SNMP types, both derived and ASN1.
+
+ ## Example
+      iex> Snimple.SNMP.Types.list_all_types
+      [:integer, :null, :octetstring, :oid, :sequence, :counter32, :counter64, :gauge32, :integer32, :ipaddr, :opaque, :timeticks]
+
+	"""	
+	def list_all_types do
+		List.flatten([list_asn1_types, list_snmp_types])
+	end
+		
 	def encode(value, :octetstring) do
 		<< asn1_type(:octetstring) >> <> encoded_data_size(value) <> value
 	end
@@ -44,6 +102,43 @@ defmodule Snimple.SNMP.Types do
 		result = seq |> Enum.map(fn {value, type} -> encode(value, type) end)
 		|> Enum.join
 		<< asn1_type(:sequence) >> <> encoded_data_size(result) <> result
+	end
+
+	def encode(ip, :ipaddr) do
+		ipaddr = ip |> String.split(".")
+		|> Enum.map(fn n -> String.to_integer(n) end)
+		|> :binary.list_to_bin
+		<< snmp_type(:ipaddr) >> <> << 4 >> <> ipaddr
+	end
+
+	def encode(value, :integer32) do
+		_encode_integer_type(value, @int32mask, :integer32)
+	end
+
+	def encode(value, :counter32) do
+		_encode_integer_type(value, @int32mask, :counter32)
+	end
+
+	def encode(value, :gauge32) when value <= @int32max do
+		_encode_integer_type(value, @int32mask, :gauge32)
+	end
+	def encode(_value, :gauge32) do
+		_encode_integer_type(@int32max, @int32mask, :gauge32)
+	end
+
+	def encode(centisecs, :timeticks) when centisecs <= @int32max do
+		_encode_integer_type(centisecs, @int32mask, :timeticks)
+	end
+	def encode(_centisecs, :timeticks) do
+		_encode_integer_type(@int32max, @int32mask, :timeticks)
+	end
+
+	def encode(value, :counter64) do
+		_encode_integer_type(value, @int64mask, :counter64)
+	end
+
+	def encode(legacy, :opaque) do
+		<< snmp_type(:opaque) >> <> encoded_data_size(legacy) <> legacy
 	end
 
 	def encode(oid_string, :oid) do
@@ -72,43 +167,6 @@ defmodule Snimple.SNMP.Types do
 		val = Bitwise.&&&(value, 0x7F) |> Bitwise.|||(0x80)
 		_encode_node(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7)
 	end
-	
-	def encode(value, :integer32) do
-		encode_integer_type(value, @int32mask, :integer32)
-	end
-
-	def encode(ip, :ipaddr) do
-		ipaddr = ip |> String.split(".")
-		|> Enum.map(fn n -> String.to_integer(n) end)
-		|> :binary.list_to_bin
-		<< snmp_type(:ipaddr) >> <> << 4 >> <> ipaddr
-	end
-
-	def encode(value, :counter32) do
-		encode_integer_type(value, @int32mask, :counter32)
-	end
-
-	def encode(value, :gauge32) when value <= @int32max do
-		encode_integer_type(value, @int32mask, :gauge32)
-	end
-	def encode(_value, :gauge32) do
-		encode_integer_type(@int32max, @int32mask, :gauge32)
-	end
-
-	def encode(centisecs, :timeticks) when centisecs <= @int32max do
-		encode_integer_type(centisecs, @int32mask, :timeticks)
-	end
-	def encode(_centisecs, :timeticks) do
-		encode_integer_type(@int32max, @int32mask, :timeticks)
-	end
-
-	def encode(value, :counter64) do
-		encode_integer_type(value, @int64mask, :counter64)
-	end
-
-	def encode(legacy, :opaque) do
-		<< snmp_type(:opaque) >> <> encoded_data_size(legacy) <> legacy
-	end
 
 	def decode(<< 0x04, data::binary >>) do
 		{len, data} = decoded_data_size(data)
@@ -125,26 +183,6 @@ defmodule Snimple.SNMP.Types do
 			length: len,
 			value: nil
 		 }
-	end
-
-	def decode(<< 0x30, data::binary >>) do
-		{len, data} = decoded_data_size(data)
-		data = :binary.part(data, 0, len)
-		sequence_list = _decode_sequence_data([], data)
-		%{type: :sequence, length: len, value: sequence_list}
-	end
-	defp _decode_sequence_data(list, <<>>) do
-		list
-	end
-	defp _decode_sequence_data(list, data) do
-		result = decode(data)
-		pattern = decode_as_binary_only(data)
-		case pattern do
-			<<>> -> data = pattern
-			_    -> data = :binary.split(data, pattern) |> List.last
-		end
-		list = List.insert_at(list, -1, result)
-		_decode_sequence_data(list, data)
 	end
 
 	def decode(<< 0x06, data::binary >>) do
@@ -205,6 +243,26 @@ defmodule Snimple.SNMP.Types do
 		_decode_internal(data, :counter64, &:binary.decode_unsigned/1)
 	end
 
+	def decode(<< 0x30, data::binary >>) do
+		{len, data} = decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		sequence_list = _decode_sequence_data([], data)
+		%{type: :sequence, length: len, value: sequence_list}
+	end
+	defp _decode_sequence_data(list, <<>>) do
+		list
+	end
+	defp _decode_sequence_data(list, data) do
+		result = decode(data)
+		pattern = _decode_as_binary_only(data)
+		case pattern do
+			<<>> -> data = pattern
+			_    -> data = :binary.split(data, pattern) |> List.last
+		end
+		list = List.insert_at(list, -1, result)
+		_decode_sequence_data(list, data)
+	end
+
 	defp _decode_internal(data, type, decode_func) do
 		{len, data} = decoded_data_size(data)
 		data = :binary.part(data, 0, len)
@@ -214,12 +272,12 @@ defmodule Snimple.SNMP.Types do
 			}
 	end
 
-	def encode_integer_type(value, mask, t) when is_atom(t) do
+	defp _encode_integer_type(value, mask, t) when is_atom(t) do
 		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
 		<< snmp_type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
 	end
-	
-	def decode_as_binary_only(<<_::binary-size(1), data::binary >>) do
+
+	defp _decode_as_binary_only(<<_::binary-size(1), data::binary >>) do
 		{len, data} = decoded_data_size(data)
 		:binary.part(data, 0, len)
 	end
