@@ -72,6 +72,10 @@ defmodule Snimple.SnmpPdus do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmptrap)
 	end
 
+	def encode_pdu(vblist, requid, :snmpinform) do
+		_encode_pdu(vblist, requid, error(:noError), 0, :snmptrap)
+	end
+
 	def encode_pdu(vblist, requid, nonrepeat, maxreps, :snmpgetbulk) do
 		body = request_id(requid)
 		<> non_repeaters(nonrepeat)
