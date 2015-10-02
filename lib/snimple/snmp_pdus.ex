@@ -1,6 +1,5 @@
 defmodule Snimple.SnmpPdus do
 	alias Snimple.SNMP.Types, as: SNMP
-	alias Snimple.ASN1.Types, as: ASN1
 
 	def pdu_identifier do
 		%{
@@ -79,13 +78,13 @@ defmodule Snimple.SnmpPdus do
 #			Dict.has_key?(SNMP.snmp_type_identifier, type) -> encoded_value = SNMP.encode(value, type)
 #		end
 #		ASN1.encode(oid, :oid) <> encoded_value |> ASN1.encode(:sequence)
-		ASN1.encode([{oid, :oid},{value, type}, :sequence]) 
+		SNMP.encode([{oid, :oid},{value, type}], :sequence) 
 	end
 
 	def var_bind_list(vb_list) do
 		vb_list
 		|> Enum.map(fn vb -> var_bind(vb) end)
-		|> ASN1.encode(:sequence)
+		|> SNMP.encode(:sequence)
 	end
 
 	def request_id(id), do: SNMP.encode(id, :integer32)

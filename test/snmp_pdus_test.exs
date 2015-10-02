@@ -1,9 +1,7 @@
-defmodule SNMPGetTest do
+defmodule SnmpPdusTest do
 	use ExUnit.Case
 
 	import Snimple.SnmpPdus
-	alias Snimple.ASN1.Types, as: ASN1
-	alias Snimple.SNMP.Types, as: SNMP
 
 	defp example_snmpget_pdu do
 		{:ok, pkt} = Base.decode16("002402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
@@ -117,8 +115,9 @@ defmodule SNMPGetTest do
 		assert_correct_pdu_identifier(encoded_pdu, :snmptrap)
 	end
 
-	test "should be able to make a variable binding" do
+	test "should be able to make a variable binding of any type" do
 		assert var_bind({"1.3.1.1.1", {0, :null}}) == << 48, 8, 6, 4, 43, 1, 1, 1, 5, 0 >>
+		assert var_bind({"1.3.1.1.1", {4294967295, :gauge32}}) == << 48, 12, 6, 4, 43, 1, 1, 1, 66, 4, 255, 255, 255, 255 >> 
 		assert var_bind({"1.3.6.1.4.1.2680.1.2.7.3.2.0", {"octetstring", :octetstring}}) == << 48, 28 >>
 	      <> << 6, 13, 43, 6, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 0 >>
 	      <> <<4, 11, 111, 99, 116, 101, 116, 115, 116, 114, 105, 110, 103>>
