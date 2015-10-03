@@ -13,7 +13,7 @@ defmodule SnmpPdusTest do
 		pkt
 	end
 
-	defp example_snmpgetresponse_pdu do
+	defp example_snmpresponse_pdu do
 		{:ok, pkt} = Base.decode16("a22502047f71fce70201000201003017301506102b06010401c40402030204010104817d020108", [case: :lower])
 		pkt
 	end
@@ -96,7 +96,7 @@ defmodule SnmpPdusTest do
 
 	test "should be able to construct an snmpresponse pdu" do
 		encoded_pdu = encode_pdu([ {"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253", {8, :integer32} } ], 2138176743, 0, 0, :snmpresponse)
-		assert encoded_pdu == example_snmpgetresponse_pdu
+		assert encoded_pdu == example_snmpresponse_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmpresponse)
 	end
 
@@ -145,6 +145,34 @@ defmodule SnmpPdusTest do
 	test "should be able to make a list of variable bindings" do
 		vblist = test_varbind_list |> var_bind_list()
 		assert vblist == example_var_bind_list
+	end
+
+	test "should be able to decode an snmpget pdu" do
+		assert decode_pdu(example_snmpget_pdu) == %{}
+	end
+
+	test "should be able to decode an snmpgetnext pdu" do
+		assert decode_pdu(example_snmpgetnext_pdu) == %{}
+	end
+
+	test "should be able to decode an snmpresponse pdu" do
+		assert decode_pdu(example_snmpresponse_pdu) == %{}
+	end
+
+	test "should be able to decode an snmpset pdu" do
+		assert decode_pdu(example_snmpset_pdu) == %{}
+	end
+
+	test "should be able to decode an snmpbulk pdu" do
+		assert decode_pdu(example_snmpbulkget_pdu) == %{}
+	end
+
+	test "should be able to decode an snmpinform pdu" do
+		assert decode_pdu(example_snmpinform_pdu) == %{}
+	end
+
+	test "should be able to decode an snmptrap pdu" do
+		assert decode_pdu(example_snmptrap_pdu) == %{}
 	end
 
 	defp assert_correct_pdu_identifier(pdu, identifier) do
