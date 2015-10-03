@@ -92,6 +92,28 @@ defmodule Snimple.SnmpPdus do
 		<< pdu_id(type) >> <> SNMP.encoded_data_size(body) <> body
 	end
 
+  def decode_pdu(<< 0x00, data::binary >>) do
+	end
+
+	def decode_pdu(<< 0x01, data::binary >>) do
+	end
+
+  def decode_pdu(<< 0x02, data::binary >>) do
+	end
+
+	def decode_pdu(<< 0x03, data::binary >>) do
+	end
+
+	def decode_pdu(<< 0x05, data::binary >>) do
+	end
+
+  def decode_pdu(<< 0x06, data::binary >>) do
+	end
+
+	def decode_pdu(<< 0x07, data::binary >>) do
+	end
+
+
 	def var_bind({oid, {value, type}} = vb) do
 		SNMP.encode([{oid, :oid},{value, type}], :sequence) 
 	end

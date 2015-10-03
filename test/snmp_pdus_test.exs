@@ -27,7 +27,7 @@ defmodule SnmpPdusTest do
 		{:ok, pkt} = Base.decode16("a52102041788f9b502010002010a30133011060d2b06010401c4040201020101000500", [case: :lower])
 		pkt
 	end
- 
+
 	defp example_snmpinform_pdu do
 		{:ok, pkt} = Base.decode16("a65702045e408fa202010002010030493017060a2b06010603010104010006092b06010" <>
 			"60301010503300e06092b0601020102020101020102300e06092b0601020102020107020101300e06092b0601020102020108020101", [case: :lower])
@@ -69,11 +69,22 @@ defmodule SnmpPdusTest do
 	end
 
 	defp test_varbind_list do
-		[
-			{ "1.3.6.1.4.1.2680.1.2.7.3.2.0", {100, :integer32}},
-			{ "1.3.6.1.4.1.2680.1.2.7.3.2.1", {"octetstring", :octetstring}},
-			{ "1.3.0.1.4.1.2680.1.2.7.3.2.19865.0", {0, :null}},
-			{".1.3.6.1.4.1.8708.2.4.2.2.1.1.72.1667", {10557, :integer32}}
+				vbl = [
+			{"1.3.6.1.2.1.1.3.0", {872197439, :timeticks}},
+			{"1.3.6.1.6.3.1.1.4.1.0", {"1.3.6.1.4.1.8708.2.1.2.3.0.7", :oid}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.1.50", {50, :gauge32}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.2.50", {"1.3.6.1.4.1.8708.2.1.2.5.2.0", :oid}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.50", {"1.3.6.1.4.1.8708.2.1.2.5.5.0", :oid}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.4.50", {"alarmTest", :octetstring}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.5.50", {5, :gauge32}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.6.50", {0, :gauge32}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.7.50", {5, :integer32}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.8.50", {53, :integer32}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.9.50", {"Test of environmental type critical alarm", :octetstring}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.10.50", {6, :integer32}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.11.50", {<<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>, :octetstring}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.12.50", {<<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>, :octetstring}},
+			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.13.50", {93, :counter32}}
 		]
 	end
 
@@ -102,26 +113,7 @@ defmodule SnmpPdusTest do
 	end
 
 	test "should be able to construct an snmptrap pdu" do
-		vbl = [
-			{"1.3.6.1.2.1.1.3.0", {872197439, :timeticks}},
-			{"1.3.6.1.6.3.1.1.4.1.0", {"1.3.6.1.4.1.8708.2.1.2.3.0.7", :oid}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.1.50", {50, :gauge32}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.2.50", {"1.3.6.1.4.1.8708.2.1.2.5.2.0", :oid}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.50", {"1.3.6.1.4.1.8708.2.1.2.5.5.0", :oid}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.4.50", {"alarmTest", :octetstring}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.5.50", {5, :gauge32}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.6.50", {0, :gauge32}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.7.50", {5, :integer32}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.8.50", {53, :integer32}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.9.50", {"Test of environmental type critical alarm", :octetstring}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.10.50", {6, :integer32}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.11.50", {<<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>, :octetstring}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.12.50", {<<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>, :octetstring}},
-			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.13.50", {93, :counter32}}
-		]
-		encoded_vbl = vbl |> var_bind_list()
-		assert encoded_vbl == example_var_bind_list
-		encoded_pdu = encode_pdu(vbl, 935904613, :snmptrap)
+		encoded_pdu = encode_pdu(test_varbind_list, 935904613, :snmptrap)
 		assert encoded_pdu == example_snmptrap_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmptrap)
 	end
@@ -132,7 +124,7 @@ defmodule SnmpPdusTest do
 		assert_correct_pdu_identifier(encoded_pdu, :snmpgetbulk)
 	end
 
-	test "should be ablie to construct an snmpinform pdu" do
+	test "should be able to construct an snmpinform pdu" do
 		encoded_pdu = encode_pdu([{"1.3.6.1.6.3.1.1.4.1.0", {"1.3.6.1.6.3.1.1.5.3", :oid}},
 														  {"1.3.6.1.2.1.2.2.1.1", {2, :integer32}},
 															{"1.3.6.1.2.1.2.2.1.7", {1, :integer32}},
@@ -152,7 +144,7 @@ defmodule SnmpPdusTest do
 
 	test "should be able to make a list of variable bindings" do
 		vblist = test_varbind_list |> var_bind_list()
-		assert byte_size(vblist) == 96 + 2
+		assert vblist == example_var_bind_list
 	end
 
 	defp assert_correct_pdu_identifier(pdu, identifier) do
