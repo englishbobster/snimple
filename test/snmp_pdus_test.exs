@@ -4,32 +4,38 @@ defmodule SnmpPdusTest do
 	import Snimple.SnmpPdus
 
 	defp example_snmpget_pdu do
-		{:ok, pkt} = Base.decode16("002402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
-		pkt
-	end
-
-	defp example_snmpgetresponse_pdu do
-		{:ok, pkt} = Base.decode16("022502047f71fce70201000201003017301506102b06010401c40402030204010104817d020108", [case: :lower])
+		{:ok, pkt} = Base.decode16("a02402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
 		pkt
 	end
 
 	defp example_snmpgetnext_pdu do
-		{:ok, pkt} = Base.decode16("012302045f79337f02010002010030153013060f2b06010401c40402010202010103150500", [case: :lower])
+		{:ok, pkt} = Base.decode16("a12302045f79337f02010002010030153013060f2b06010401c40402010202010103150500", [case: :lower])
+		pkt
+	end
+
+	defp example_snmpgetresponse_pdu do
+		{:ok, pkt} = Base.decode16("a22502047f71fce70201000201003017301506102b06010401c40402030204010104817d020108", [case: :lower])
 		pkt
 	end
 
 	defp example_snmpset_pdu do
-		{:ok, pkt} = Base.decode16("032102042cabc38d0201000201003013301106082b060102010106000405736f757468", [case: :lower])
+		{:ok, pkt} = Base.decode16("a32102042cabc38d0201000201003013301106082b060102010106000405736f757468", [case: :lower])
 		pkt
 	end
 
 	defp example_snmpbulkget_pdu do
-		{:ok, pkt} = Base.decode16("052102041788f9b502010002010a30133011060d2b06010401c4040201020101000500", [case: :lower])
+		{:ok, pkt} = Base.decode16("a52102041788f9b502010002010a30133011060d2b06010401c4040201020101000500", [case: :lower])
 		pkt
 	end
-	
+ 
+	defp example_snmpinform_pdu do
+		{:ok, pkt} = Base.decode16("a65702045e408fa202010002010030493017060a2b06010603010104010006092b06010" <>
+			"60301010503300e06092b0601020102020101020102300e06092b0601020102020107020101300e06092b0601020102020108020101", [case: :lower])
+		pkt
+	end
+
 	defp example_snmptrap_pdu do
-		{:ok, pkt} = Base.decode16("078201b9020437c8c565020100020100308201a9301006082b06010201010300430433" <>
+		{:ok, pkt} = Base.decode16("a78201b9020437c8c565020100020100308201a9301006082b06010201010300430433" <>
 			"fcad3f301b060a2b060106030101040100060d2b06010401c404020102030007301406" <>
 			"0f2b06010401c40402010202010101324201323020060f2b06010401c4040201020201" <>
 			"010232060d2b06010401c4040201020502003020060f2b06010401c404020102020101" <>
@@ -114,8 +120,8 @@ defmodule SnmpPdusTest do
 			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.13.50", {93, :counter32}}
 		]
 		encoded_vbl = vbl |> var_bind_list()
-		assert encoded_vbl == example_var_bind_list 
-		encoded_pdu = encode_pdu(vbl, 935904613, :snmptrap) 
+		assert encoded_vbl == example_var_bind_list
+		encoded_pdu = encode_pdu(vbl, 935904613, :snmptrap)
 		assert encoded_pdu == example_snmptrap_pdu
 		assert_correct_pdu_identifier(encoded_pdu, :snmptrap)
 	end
@@ -126,9 +132,19 @@ defmodule SnmpPdusTest do
 		assert_correct_pdu_identifier(encoded_pdu, :snmpgetbulk)
 	end
 
+	test "should be ablie to construct an snmpinform pdu" do
+		encoded_pdu = encode_pdu([{"1.3.6.1.6.3.1.1.4.1.0", {"1.3.6.1.6.3.1.1.5.3", :oid}},
+														  {"1.3.6.1.2.1.2.2.1.1", {2, :integer32}},
+															{"1.3.6.1.2.1.2.2.1.7", {1, :integer32}},
+														  {"1.3.6.1.2.1.2.2.1.8", {1, :integer32}}],
+														  1581289378, :snmpinform)
+		assert encoded_pdu == example_snmpinform_pdu
+		assert_correct_pdu_identifier(encoded_pdu, :snmpinform)
+		end
+
 	test "should be able to make a variable binding of any type" do
 		assert var_bind({"1.3.1.1.1", {0, :null}}) == << 48, 8, 6, 4, 43, 1, 1, 1, 5, 0 >>
-		assert var_bind({"1.3.1.1.1", {4294967295, :gauge32}}) == << 48, 12, 6, 4, 43, 1, 1, 1, 66, 4, 255, 255, 255, 255 >> 
+		assert var_bind({"1.3.1.1.1", {4294967295, :gauge32}}) == << 48, 12, 6, 4, 43, 1, 1, 1, 66, 4, 255, 255, 255, 255 >>
 		assert var_bind({"1.3.6.1.4.1.2680.1.2.7.3.2.0", {"octetstring", :octetstring}}) == << 48, 28 >>
 	      <> << 6, 13, 43, 6, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 0 >>
 	      <> <<4, 11, 111, 99, 116, 101, 116, 115, 116, 114, 105, 110, 103>>

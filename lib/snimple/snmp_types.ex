@@ -8,13 +8,13 @@ defmodule Snimple.SNMP.Types do
 
 	@moduledoc """
 	This SNMP imlementation should be compatible with SNMPv1 and SNMPv2c.
-	The module defines: 
-	
-  * The types used in encoding and decoding SNMP messages. 
-    These are separated according to ASN.1 basic types and 
+	The module defines:
+
+  * The types used in encoding and decoding SNMP messages.
+    These are separated according to ASN.1 basic types and
     SNMP specific types.
-  
-  * The ASN.1 basic encoding rules (BER) used for SNMP encoding 
+
+  * The ASN.1 basic encoding rules (BER) used for SNMP encoding
     and decoding of the defined types.
 
   The types supported can be listed using one of the functions:
@@ -28,7 +28,7 @@ defmodule Snimple.SNMP.Types do
 
   See the relevant function help.
 	"""
-	
+
 	defp asn1_type_identifier do
 		%{
 			integer:     0x02,
@@ -53,7 +53,7 @@ defmodule Snimple.SNMP.Types do
 	def list_asn1_types do
 		Dict.keys(asn1_type_identifier)
 	end
-	
+
 	defp snmp_type_identifier do
 		%{
 			integer32:   asn1_type(:integer),
@@ -75,7 +75,7 @@ defmodule Snimple.SNMP.Types do
       iex> Snimple.SNMP.Types.list_snmp_types
       [:counter32, :counter64, :gauge32, :integer32, :ipaddr, :opaque, :timeticks]
 
-	"""	
+	"""
 	def list_snmp_types do
 		Dict.keys(snmp_type_identifier)
 	end
@@ -87,14 +87,14 @@ defmodule Snimple.SNMP.Types do
       iex> Snimple.SNMP.Types.list_all_types
       [:integer, :null, :octetstring, :oid, :sequence, :counter32, :counter64, :gauge32, :integer32, :ipaddr, :opaque, :timeticks]
 
-	"""	
+	"""
 	def list_all_types do
 		List.flatten([list_asn1_types, list_snmp_types])
 	end
 
 	@doc ~S"""
 	Encodes the given `value` and `type` and produces a binary representation according to the ASN.1 basic encoding rules.
-	The result is a sequence of bytes: 
+	The result is a sequence of bytes:
 
   * The first byte is the id byte representing the type.
   * The second is the size byte of the coming encoded value.
@@ -108,7 +108,7 @@ defmodule Snimple.SNMP.Types do
   * `:integer32`, `:counter32`, `:gauge32`, `:timeticks`, `:counter64` -> `value` shall be an integer.
   * `:oid` -> `value` shall be a string representation of the oid e.g. ".1.3.4.6.567.4.4.1.1.2". The leading "." is not mandatory.
   * `:sequence` -> The sequence type is basically a wrapper type for all the other types. The `value` shall be a list of tuples defining
-  values and types to be wrapped. 
+  values and types to be wrapped.
 
   e.g. [{"127.0.0.1", :ipaddr}, {".1.2.3.4.5.6", :oid}, {"Hello", :octetstring}]
 
@@ -125,13 +125,13 @@ defmodule Snimple.SNMP.Types do
       iex> Snimple.SNMP.Types.encode(1337, :gauge32)
       <<66, 2, 5, 57>>
 
-      iex> Snimple.SNMP.Types.encode(".1.3.34.3.5.6.7.8", :oid) 
+      iex> Snimple.SNMP.Types.encode(".1.3.34.3.5.6.7.8", :oid)
       <<6, 7, 43, 34, 3, 5, 6, 7, 8>>
 
-      iex> Snimple.SNMP.Types.encode([{"127.0.0.1", :ipaddr}, {".1.2.3.4.5.6", :oid}, {"Hello", :octetstring}], :sequence) 
+      iex> Snimple.SNMP.Types.encode([{"127.0.0.1", :ipaddr}, {".1.2.3.4.5.6", :oid}, {"Hello", :octetstring}], :sequence)
       <<48, 20, 64, 4, 127, 0, 0, 1, 6, 5, 42, 3, 4, 5, 6, 4, 5, 72, 101, 108, 108, 111>>
 
-	"""	
+	"""
 	def encode(value, :octetstring) do
 		<< asn1_type(:octetstring) >> <> encoded_data_size(value) <> value
 	end
@@ -218,28 +218,28 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	@doc ~S"""
-	The `arg` is a binary, usually a type from the payload of a SNMP PDU. The given binary data is decoded 
+	The `arg` is a binary, usually a type from the payload of a SNMP PDU. The given binary data is decoded
   and a map containing the decoded fields is returned.
 
 	The returned map contains the 3 keys:
-  
+
   * :type - the decoded ASN.1 or SNMP derived type.
   * :length - the length of the value field.
   * :value -  the decoded value.
 
 
   The value field will be a string for types such as `:ipaddr`, `:oid`,  and `:octetstring`, otherwise integers.
-  The value of a decoded `:sequence` will result in a list of maps containing the decoded types in the sequence. 
+  The value of a decoded `:sequence` will result in a list of maps containing the decoded types in the sequence.
 
  ## Example
 
-      iex> Snimple.SNMP.Types.decode(<<48, 20, 64, 4, 127, 0, 0, 1, 6, 5, 42, 3, 4, 5, 6, 4, 5, 72, 101, 108, 108, 111>>)  
+      iex> Snimple.SNMP.Types.decode(<<48, 20, 64, 4, 127, 0, 0, 1, 6, 5, 42, 3, 4, 5, 6, 4, 5, 72, 101, 108, 108, 111>>)
       %{length: 20, type: :sequence,
          value: [%{length: 4, type: :ipaddr, value: "127.0.0.1"},
          %{length: 5, type: :oid, value: ".1.2.3.4.5.6"},
          %{length: 5, type: :octetstring, value: "Hello"}]}
 
-	"""	
+	"""
 	def decode(<< 0x05, data::binary >>) do
 		{len, _} = decoded_data_size(data)
 		%{type: :null,

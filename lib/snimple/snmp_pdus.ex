@@ -3,14 +3,14 @@ defmodule Snimple.SnmpPdus do
 
 	def pdu_identifier do
 		%{
-			snmpget:         0x00,
-			snmpgetnext:     0x01,
-			snmpresponse:    0x02,
-			snmpset:         0x03,
-			notused:         0x04,
-			snmpgetbulk:     0x05,
-			snmpinform:      0x06,
-			snmptrap:        0x07
+			snmpget:         0xa0,
+			snmpgetnext:     0xa1,
+			snmpresponse:    0xa2,
+			snmpset:         0xa3,
+			notused:         0xa4,
+			snmpgetbulk:     0xa5,
+			snmpinform:      0xa6,
+			snmptrap:        0xa7
 		 }
 	end
 	def pdu_id(id) do
@@ -73,7 +73,7 @@ defmodule Snimple.SnmpPdus do
 	end
 
 	def encode_pdu(vblist, requid, :snmpinform) do
-		_encode_pdu(vblist, requid, error(:noError), 0, :snmptrap)
+		_encode_pdu(vblist, requid, error(:noError), 0, :snmpinform)
 	end
 
 	def encode_pdu(vblist, requid, nonrepeat, maxreps, :snmpgetbulk) do
