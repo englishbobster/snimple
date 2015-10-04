@@ -148,7 +148,12 @@ defmodule SnmpPdusTest do
 	end
 
 	test "should be able to decode an snmpget pdu" do
-		assert decode_pdu(example_snmpget_pdu) == %{}
+		assert decode_pdu(example_snmpget_pdu) == %{type: :snmpget,
+																								length: 0,
+																							  request_id: %{type: :integer32, length: 4, value: 0},
+																							  error_status: %{type: :integer32, length: 2, value: 0},
+																							  error_index: %{type: :integer32, length: 2, value: 0},
+																							  var_bind_list: 0}
 	end
 
 	test "should be able to decode an snmpgetnext pdu" do

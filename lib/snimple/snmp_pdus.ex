@@ -92,25 +92,34 @@ defmodule Snimple.SnmpPdus do
 		<< pdu_id(type) >> <> SNMP.encoded_data_size(body) <> body
 	end
 
-  def decode_pdu(<< 0x00, data::binary >>) do
+  def decode_pdu(<< 0xa0, data::binary >>) do
+		{len, data} = SNMP.decoded_data_size(data)
+		data = :binary.part(data, 0 , len)
+		%{type: :snmpget,
+			length: len,
+			request_id: 0,
+			error_status: 0,
+			error_index: 0,
+			var_bind_list: 0
+			}
 	end
 
-	def decode_pdu(<< 0x01, data::binary >>) do
+	def decode_pdu(<< 0xa1, data::binary >>) do
 	end
 
-  def decode_pdu(<< 0x02, data::binary >>) do
+  def decode_pdu(<< 0xa2, data::binary >>) do
 	end
 
-	def decode_pdu(<< 0x03, data::binary >>) do
+	def decode_pdu(<< 0xa3, data::binary >>) do
 	end
 
-	def decode_pdu(<< 0x05, data::binary >>) do
+	def decode_pdu(<< 0xa5, data::binary >>) do
 	end
 
-  def decode_pdu(<< 0x06, data::binary >>) do
+  def decode_pdu(<< 0xa6, data::binary >>) do
 	end
 
-	def decode_pdu(<< 0x07, data::binary >>) do
+	def decode_pdu(<< 0xa7, data::binary >>) do
 	end
 
 

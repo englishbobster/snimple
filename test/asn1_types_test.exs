@@ -27,6 +27,12 @@ defmodule ASN1TypesTest do
 		bin
 	end
 
+	defp test_nested_sequence do
+		value = encode(0, :null)
+		oid = encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
+	 << 48, 42 >> <> << 48, 19 >> <>  oid <> value <> << 48, 19 >> <>  oid <> value
+	end
+
 	test "should encode size according to primitive, definite length method" do
 		assert encoded_data_size(binary_size_small) == << 10 >>
 		assert encoded_data_size(binary_size_large) == << 0x81, 250 >>
@@ -112,10 +118,10 @@ defmodule ASN1TypesTest do
 	end
 
 	test "sequence should be able to contain more than one sequence" do
-		value = encode(0, :null)
-		oid = encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
-		assert encode([{[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence}, {[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence}], :sequence) ==
-	<< 48, 42 >> <> << 48, 19 >> <>  oid <> value <> << 48, 19 >> <>  oid <> value
+		assert encode([
+			{[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence},
+			{[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence}],
+									:sequence) == test_nested_sequence
 	end
 
 	test "should be able to decode a sequence binary correctly" do
@@ -128,6 +134,34 @@ defmodule ASN1TypesTest do
 												}
 		assert decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >>) == expected_result
 		assert decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >> <> "too long") == expected_result
+	end
+
+	test "should be able to decode a sequence containing a sequence" do
+		expected_result = %{length: 42,
+												type: :sequence,
+												value: [%{length: 19,
+																	type: :sequence,
+																	value: [%{length: 15,
+																						type: :oid,
+																						value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16"},
+																					%{length: 0,
+																						type: :null,
+																						value: nil}
+																				 ]
+																 },
+																%{length: 19,
+																	type: :sequence,
+																	value: [%{length: 15,
+																						type: :oid,
+																						value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16"},
+																					%{length: 0,
+																						type: :null,
+																						value: nil}
+																				 ]
+																 }
+															 ]
+											 }
+				assert decode(test_nested_sequence) == expected_result
 	end
 
 end
