@@ -94,13 +94,27 @@ defmodule Snimple.SnmpPdus do
 
   def decode_pdu(<< 0xa0, data::binary >>) do
 		{len, data} = SNMP.decoded_data_size(data)
-		data = :binary.part(data, 0 , len)
+
+		requid = SNMP.decode(data)
+		pattern = SNMP.decode_as_binary_only(data)
+		data = :binary.split(data, pattern) |> List.last
+
+		error_stat = SNMP.decode(data)
+		pattern = SNMP.decode_as_binary_only(data)
+		data = :binary.split(data, pattern) |> List.last
+
+		error_in = SNMP.decode(data)
+		pattern = SNMP.decode_as_binary_only(data)
+		data = :binary.split(data, pattern) |> List.last
+
+		sequence = SNMP.decode(data)
+
 		%{type: :snmpget,
 			length: len,
-			request_id: 0,
-			error_status: 0,
-			error_index: 0,
-			var_bind_list: 0
+			request_id: requid,
+			error_status: error_stat,
+			error_index: error_in,
+			var_bind_list: sequence
 			}
 	end
 

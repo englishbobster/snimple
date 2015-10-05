@@ -208,15 +208,6 @@ defmodule Snimple.SNMP.Types do
 		_encode_node(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7)
 	end
 
-	def decode(<< 0x04, data::binary >>) do
-		{len, data} = decoded_data_size(data)
-		data = :binary.part(data, 0, len)
-		%{type: :octetstring,
-			length: len,
-			value: data
-			}
-	end
-
 	@doc ~S"""
 	The `arg` is a binary, usually a type from the payload of a SNMP PDU. The given binary data is decoded
   and a map containing the decoded fields is returned.
@@ -240,6 +231,15 @@ defmodule Snimple.SNMP.Types do
          %{length: 5, type: :octetstring, value: "Hello"}]}
 
 	"""
+	def decode(<< 0x04, data::binary >>) do
+		{len, data} = decoded_data_size(data)
+		data = :binary.part(data, 0, len)
+		%{type: :octetstring,
+			length: len,
+			value: data
+			}
+	end
+
 	def decode(<< 0x05, data::binary >>) do
 		{len, _} = decoded_data_size(data)
 		%{type: :null,
@@ -317,7 +317,7 @@ defmodule Snimple.SNMP.Types do
 	end
 	defp _decode_sequence_data(list, data) do
 		result = decode(data)
-		pattern = _decode_as_binary_only(data)
+		pattern = decode_as_binary_only(data)
 		case pattern do
 			<<>> -> data = pattern
 			_    -> data = :binary.split(data, pattern) |> List.last
@@ -340,7 +340,7 @@ defmodule Snimple.SNMP.Types do
 		<< snmp_type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
 	end
 
-	defp _decode_as_binary_only(<<_::binary-size(1), data::binary >>) do
+	def decode_as_binary_only(<<_::binary-size(1), data::binary >>) do
 		{len, data} = decoded_data_size(data)
 		:binary.part(data, 0, len)
 	end

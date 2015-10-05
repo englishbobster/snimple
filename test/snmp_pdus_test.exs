@@ -149,11 +149,15 @@ defmodule SnmpPdusTest do
 
 	test "should be able to decode an snmpget pdu" do
 		assert decode_pdu(example_snmpget_pdu) == %{type: :snmpget,
-																								length: 0,
-																							  request_id: %{type: :integer32, length: 4, value: 0},
-																							  error_status: %{type: :integer32, length: 2, value: 0},
-																							  error_index: %{type: :integer32, length: 2, value: 0},
-																							  var_bind_list: 0}
+																								length: 36,
+																							  request_id: %{type: :integer32, length: 4, value: 2138176743},
+																							  error_status: %{type: :integer32, length: 1, value: 0},
+																							  error_index: %{type: :integer32, length: 1, value: 0},
+																							  var_bind_list: %{length: 22, type: :sequence,
+																																 value: [%{length: 20, type: :sequence,
+																																					 value: [%{length: 16, type: :oid,
+																																										 value: ".1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253"},
+																																									 %{length: 0, type: :null, value: nil}]}]}}
 	end
 
 	test "should be able to decode an snmpgetnext pdu" do
