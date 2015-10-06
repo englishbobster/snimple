@@ -93,52 +93,35 @@ defmodule Snimple.SnmpPdus do
 	end
 
   def decode_pdu(<< 0xa0, data::binary >>) do
-		{len, data} = SNMP.decoded_data_size(data)
-
-		requid = SNMP.decode(data)
-		pattern = SNMP.decode_as_binary_only(data)
-		data = :binary.split(data, pattern) |> List.last
-
-		error_stat = SNMP.decode(data)
-		pattern = SNMP.decode_as_binary_only(data)
-		data = :binary.split(data, pattern) |> List.last
-
-		error_in = SNMP.decode(data)
-		pattern = SNMP.decode_as_binary_only(data)
-		data = :binary.split(data, pattern) |> List.last
-
-		sequence = SNMP.decode(data)
-
-		%{type: :snmpget,
-			length: len,
-			request_id: requid,
-			error_status: error_stat,
-			error_index: error_in,
-			var_bind_list: sequence
-			}
+		_decode_std_pdu(data)
 	end
 
 	def decode_pdu(<< 0xa1, data::binary >>) do
+		_decode_std_pdu(data)
 	end
 
   def decode_pdu(<< 0xa2, data::binary >>) do
+		_decode_std_pdu(data)
 	end
 
 	def decode_pdu(<< 0xa3, data::binary >>) do
+		_decode_std_pdu(data)
 	end
 
 	def decode_pdu(<< 0xa5, data::binary >>) do
+		_decode_std_pdu(data)
 	end
 
   def decode_pdu(<< 0xa6, data::binary >>) do
+		_decode_non_std_pdu(data)
 	end
 
 	def decode_pdu(<< 0xa7, data::binary >>) do
+		_decode_std_pdu(data)
 	end
 
-
 	def var_bind({oid, {value, type}} = vb) do
-		SNMP.encode([{oid, :oid},{value, type}], :sequence) 
+		SNMP.encode([{oid, :oid},{value, type}], :sequence)
 	end
 
 	def var_bind_list(vb_list) do
@@ -152,5 +135,29 @@ defmodule Snimple.SnmpPdus do
 	def max_repetitions(max_reps), do: SNMP.encode(max_reps, :integer32)
 	def error_status(status), do: SNMP.encode(status, :integer32)
 	def error_index(index), do: SNMP.encode(index, :integer32)
+
+	defp _decode_std_pdu (data) do
+		{len, data} = SNMP.decoded_data_size(data)
+		{requid, data} = _chomp_fields(data)
+		{error_stat, data} = _chomp_fields(data)
+		{error_in, data} = _chomp_fields(data)
+		sequence = SNMP.decode(data)
+
+		%{type: :snmpget,
+			length: len,
+			request_id: requid,
+			error_status: error_stat,
+			error_index: error_in,
+			var_bind_list: sequence
+			}
+	end
+	defp _chomp_fields(data) do
+		field_value = SNMP.decode(data)
+		pattern = SNMP.decode_as_binary_only(data)
+		data = :binary.split(data, pattern) |> List.last
+		{field_value, data}
+	end
+	def _decode_non_std_pdu(data) do
+	end
 
 end
