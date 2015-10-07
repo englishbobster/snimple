@@ -3,14 +3,14 @@ defmodule Snimple.SnmpPdus do
 
 	def pdu_identifier do
 		%{
-			snmpget:         0xa0,
-			snmpgetnext:     0xa1,
-			snmpresponse:    0xa2,
-			snmpset:         0xa3,
-			notused:         0xa4,
-			snmpgetbulk:     0xa5,
-			snmpinform:      0xa6,
-			snmptrap:        0xa7
+			snmpget:         0xA0,
+			snmpgetnext:     0xA1,
+			snmpresponse:    0xA2,
+			snmpset:         0xA3,
+			notused:         0xA4,
+			snmpgetbulk:     0xA5,
+			snmpinform:      0xA6,
+			snmptrap:        0xA7
 		 }
 	end
 	def pdu_id(id) do
@@ -22,30 +22,34 @@ defmodule Snimple.SnmpPdus do
 	end
 
 	def error_status do
-		%{
-			noError:              0x00,
-			tooBig:               0x01,
-			noSuchName:           0x02,
-			badValue:             0x03,
-			readOnly:             0x04,
-			genErr:               0x05,
-			noAccess:             0x06,
-			wrongType:            0x07,
-			wrongLength:          0x08,
-			wrongEncoding:        0x09,
-			wrongValue:           0x0A,
-			noCreation:           0x0B,
-			inconsistentValue:    0x0C,
-			resourceUnavailable:  0x0D,
-			commitFailed:         0x0E,
-			undoFailed:           0x0F,
-			authorizationError:   0x10,
-			notWritable:          0x11,
-			inconsistentName:     0x12
-		}
+		[
+			{:noError,              0x00},
+			{:tooBig,               0x01},
+			{:noSuchName,           0x02},
+			{:badValue,             0x03},
+			{:readOnly,             0x04},
+			{:genErr,               0x05},
+			{:noAccess,             0x06},
+			{:wrongType,            0x07},
+			{:wrongLength,          0x08},
+			{:wrongEncoding,        0x09},
+			{:wrongValue,           0x0A},
+			{:noCreation,           0x0B},
+			{:inconsistentValue,    0x0C},
+			{:resourceUnavailable,  0x0D},
+			{:commitFailed,         0x0E},
+			{:undoFailed,           0x0F},
+			{:authorizationError,   0x10},
+			{:notWritable,          0x11},
+			{:inconsistentName,     0x12}
+		]
 	end
-	def error(status) do
+	def error(status) when is_atom(status) do
 		Dict.get(error_status, status)
+	end
+	def error(status) when is_integer(status) do
+		{error, _} =error_status |> Enum.find(fn {_, status_code} -> status_code == status end)
+		error
 	end
 
 	def list_possible_errors do
@@ -92,31 +96,31 @@ defmodule Snimple.SnmpPdus do
 		<< pdu_id(type) >> <> SNMP.encoded_data_size(body) <> body
 	end
 
-  def decode_pdu(<< 0xa0, data::binary >>) do
+  def decode_pdu(<< 0xA0, data::binary >>) do
 		_decode_std_pdu(data, :snmpget)
 	end
 
-	def decode_pdu(<< 0xa1, data::binary >>) do
+	def decode_pdu(<< 0xA1, data::binary >>) do
 		_decode_std_pdu(data, :snmpgetnext)
 	end
 
-  def decode_pdu(<< 0xa2, data::binary >>) do
+  def decode_pdu(<< 0xA2, data::binary >>) do
 		_decode_std_pdu(data, :snmpresponse)
 	end
 
-	def decode_pdu(<< 0xa3, data::binary >>) do
+	def decode_pdu(<< 0xA3, data::binary >>) do
 		_decode_std_pdu(data, :snmpset)
 	end
 
-	def decode_pdu(<< 0xa5, data::binary >>) do
+	def decode_pdu(<< 0xA5, data::binary >>) do
 		_decode_non_std_pdu(data, :snmpgetbulk)
 	end
 
-  def decode_pdu(<< 0xa6, data::binary >>) do
+  def decode_pdu(<< 0xA6, data::binary >>) do
 		_decode_std_pdu(data, :snmpinform)
 	end
 
-	def decode_pdu(<< 0xa7, data::binary >>) do
+	def decode_pdu(<< 0xA7, data::binary >>) do
 		_decode_std_pdu(data, :snmptrap)
 	end
 
@@ -138,9 +142,9 @@ defmodule Snimple.SnmpPdus do
 
 	defp _decode_std_pdu(data, type) when is_atom(type) do
 		{len, data} = SNMP.decoded_data_size(data)
-		{requid, data} = _chomp_fields(data)
-		{error_stat, data} = _chomp_fields(data)
-		{error_in, data} = _chomp_fields(data)
+		{requid, data} = _chomp_field(data)
+		{error_stat, data} = _chomp_error_status(data)
+		{error_in, data} = _chomp_field(data)
 		sequence = SNMP.decode(data)
 
 		%{type: type,
@@ -151,17 +155,25 @@ defmodule Snimple.SnmpPdus do
 			var_bind_list: sequence
 			}
 	end
-	defp _chomp_fields(data) do
+
+	defp _chomp_field(data) do
 		field_value = SNMP.decode(data)
 		pattern = SNMP.decode_as_binary_only(data)
 		data = :binary.split(data, pattern) |> List.last
 		{field_value, data}
 	end
-	def _decode_non_std_pdu(data, type) when is_atom(type) do
+
+  defp _chomp_error_status(data) do
+		{field_value, data} = _chomp_field(data)
+		 val = Dict.get(field_value, :value)
+		{error(val), data}
+	end
+
+	defp _decode_non_std_pdu(data, type) when is_atom(type) do
 		{len, data} = SNMP.decoded_data_size(data)
-		{requid, data} = _chomp_fields(data)
-		{non_reps, data} = _chomp_fields(data)
-		{max_reps, data} = _chomp_fields(data)
+		{requid, data} = _chomp_field(data)
+		{non_reps, data} = _chomp_field(data)
+		{max_reps, data} = _chomp_field(data)
 		sequence = SNMP.decode(data)
 		%{type: type,
 			length: len,
@@ -170,7 +182,5 @@ defmodule Snimple.SnmpPdus do
 			max_repetitions: max_reps,
 			var_bind_list: sequence
 			}
-
 	end
-
 end

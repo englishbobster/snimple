@@ -91,37 +91,31 @@ defmodule SnmpPdusTest do
 	test "should be able to construct an snmpget pdu" do
 		encoded_pdu = encode_pdu([ {"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253", {0, :null}} ], 2138176743, :snmpget)
 		assert encoded_pdu == example_snmpget_pdu
-		assert_correct_pdu_identifier(encoded_pdu, :snmpget)
 	end
 
 	test "should be able to construct an snmpresponse pdu" do
 		encoded_pdu = encode_pdu([ {"1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253", {8, :integer32} } ], 2138176743, 0, 0, :snmpresponse)
 		assert encoded_pdu == example_snmpresponse_pdu
-		assert_correct_pdu_identifier(encoded_pdu, :snmpresponse)
 	end
 
 	test "should be able to construct an snmpgetnext pdu" do
 		encoded_pdu = encode_pdu([ {"1.3.6.1.4.1.8708.2.1.2.2.1.1.3.21", {0, :null}} ], 1601778559, :snmpgetnext)
 		assert encoded_pdu == example_snmpgetnext_pdu
-		assert_correct_pdu_identifier(encoded_pdu, :snmpgetnext)
 	end
 
 	test "should be able to construct an snmpset pdu" do
 		encoded_pdu = encode_pdu([ {".1.3.6.1.2.1.1.6.0", {"south", :octetstring}} ], 749454221, :snmpset)
 		assert encoded_pdu == example_snmpset_pdu
-		assert_correct_pdu_identifier(encoded_pdu, :snmpset)
 	end
 
 	test "should be able to construct an snmptrap pdu" do
 		encoded_pdu = encode_pdu(test_varbind_list, 935904613, :snmptrap)
 		assert encoded_pdu == example_snmptrap_pdu
-		assert_correct_pdu_identifier(encoded_pdu, :snmptrap)
 	end
 
 	test "should be able to construct an snmpgetbulk pdu" do
 		encoded_pdu = encode_pdu([ {"1.3.6.1.4.1.8708.2.1.2.1.1.0", {0, :null} }], 394852789, 0, 10, :snmpgetbulk)
 		assert encoded_pdu == example_snmpbulkget_pdu
-		assert_correct_pdu_identifier(encoded_pdu, :snmpgetbulk)
 	end
 
 	test "should be able to construct an snmpinform pdu" do
@@ -131,7 +125,6 @@ defmodule SnmpPdusTest do
 														  {"1.3.6.1.2.1.2.2.1.8", {1, :integer32}}],
 														  1581289378, :snmpinform)
 		assert encoded_pdu == example_snmpinform_pdu
-		assert_correct_pdu_identifier(encoded_pdu, :snmpinform)
 		end
 
 	test "should be able to make a variable binding of any type" do
@@ -151,7 +144,7 @@ defmodule SnmpPdusTest do
 		assert decode_pdu(example_snmpget_pdu) == %{type: :snmpget,
 																								length: 36,
 																							  request_id: %{type: :integer32, length: 4, value: 2138176743},
-																							  error_status: %{type: :integer32, length: 1, value: 0},
+																							  error_status: :noError,
 																							  error_index: %{type: :integer32, length: 1, value: 0},
 																							  var_bind_list: %{length: 22, type: :sequence,
 																																 value: [%{length: 20, type: :sequence,
@@ -161,20 +154,20 @@ defmodule SnmpPdusTest do
 	end
 
 	test "should be able to decode an snmpgetnext pdu" do
-		assert decode_pdu(example_snmpgetnext_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
-             error_status: %{length: 1, type: :integer32, value: 0}, length: 35,
+		assert decode_pdu(example_snmpgetnext_pdu) ==%{error_index: %{length: 1, type: :integer32, value: 0},
+             error_status: :noError, length: 35,
              request_id: %{length: 4, type: :integer32, value: 1601778559},
              type: :snmpgetnext,
              var_bind_list: %{length: 21, type: :sequence,
                value: [%{length: 19, type: :sequence,
                   value: [%{length: 15, type: :oid,
                      value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.21"},
-                   %{length: 0, type: :null, value: nil}]}]}}
+													%{length: 0, type: :null, value: nil}]}]}}
 	end
 
 	test "should be able to decode an snmpresponse pdu" do
 		assert decode_pdu(example_snmpresponse_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
-             error_status: %{length: 1, type: :integer32, value: 0}, length: 37,
+             error_status: :noError, length: 37,
              request_id: %{length: 4, type: :integer32, value: 2138176743},
              type: :snmpresponse,
              var_bind_list: %{length: 23, type: :sequence,
@@ -186,7 +179,7 @@ defmodule SnmpPdusTest do
 
 	test "should be able to decode an snmpset pdu" do
 		assert decode_pdu(example_snmpset_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
-             error_status: %{length: 1, type: :integer32, value: 0}, length: 33,
+             error_status: :noError, length: 33,
              request_id: %{length: 4, type: :integer32, value: 749454221},
              type: :snmpset,
              var_bind_list: %{length: 19, type: :sequence,
@@ -210,7 +203,7 @@ defmodule SnmpPdusTest do
 
 	test "should be able to decode an snmpinform pdu" do
 		assert decode_pdu(example_snmpinform_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
-             error_status: %{length: 1, type: :integer32, value: 0}, length: 87,
+             error_status: :noError, length: 87,
              request_id: %{length: 4, type: :integer32, value: 1581289378},
              type: :snmpinform,
              var_bind_list: %{length: 73, type: :sequence,
@@ -234,7 +227,7 @@ defmodule SnmpPdusTest do
 
 	test "should be able to decode an snmptrap pdu" do
 		assert decode_pdu(example_snmptrap_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
-             error_status: %{length: 1, type: :integer32, value: 0},
+             error_status: :noError,
              length: 441,
              request_id: %{length: 4, type: :integer32, value: 935904613},
              type: :snmptrap,
@@ -305,10 +298,4 @@ defmodule SnmpPdusTest do
                      value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.13.50"},
                    %{length: 1, type: :counter32, value: 93}]}]}}
 	end
-
-	defp assert_correct_pdu_identifier(pdu, identifier) do
-		[h|_] = :erlang.binary_to_list(pdu)
-		assert h == Snimple.SnmpPdus.pdu_id(identifier)
-	end
-
 end
