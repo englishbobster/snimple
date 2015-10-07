@@ -28,9 +28,10 @@ defmodule ASN1TypesTest do
 	end
 
 	defp test_nested_sequence do
-		value = encode(0, :null)
+		value_null = encode(0, :null)
+		value_int = encode(1, :integer32)
 		oid = encode(".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid)
-	 << 48, 42 >> <> << 48, 19 >> <>  oid <> value <> << 48, 19 >> <>  oid <> value
+	 << 48, 43 >> <> << 48, 19 >> <>  oid <> value_null <> << 48, 20 >> <>  oid <> value_int
 	end
 
 	test "should encode size according to primitive, definite length method" do
@@ -120,7 +121,7 @@ defmodule ASN1TypesTest do
 	test "sequence should be able to contain more than one sequence" do
 		assert encode([
 			{[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence},
-			{[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {0, :null}], :sequence}],
+			{[{".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16", :oid}, {1, :integer32}], :sequence}],
 									:sequence) == test_nested_sequence
 	end
 
@@ -139,11 +140,24 @@ defmodule ASN1TypesTest do
 	test "should be able to decode a small sequence binary correctly" do
 		{:ok, seq} = Base.decode16("30493017060a2b06010603010104010006092b06010" <>
 			"60301010503300e06092b0601020102020101020102" <> "300e06092b0601020102020107020101" <>"300e06092b0601020102020108020101", [case: :lower])
-		assert decode(seq) == %{}
+		assert decode(seq) == %{length: 73, type: :sequence,
+             value: [%{length: 23, type: :sequence,
+                value: [%{length: 10, type: :oid,
+                   value: ".1.3.6.1.6.3.1.1.4.1.0"},
+                 %{length: 9, type: :oid, value: ".1.3.6.1.6.3.1.1.5.3"}]},
+              %{length: 14, type: :sequence,
+                value: [%{length: 9, type: :oid, value: ".1.3.6.1.2.1.2.2.1.1"},
+                 %{length: 1, type: :integer32, value: 2}]},
+              %{length: 14, type: :sequence,
+                value: [%{length: 9, type: :oid, value: ".1.3.6.1.2.1.2.2.1.7"},
+                 %{length: 1, type: :integer32, value: 1}]},
+              %{length: 14, type: :sequence,
+                value: [%{length: 9, type: :oid, value: ".1.3.6.1.2.1.2.2.1.8"},
+                 %{length: 1, type: :integer32, value: 1}]}]}
 	end
 
 	test "should be able to decode a sequence containing a sequence" do
-		expected_result = %{length: 42,
+		expected_result = %{length: 43,
 												type: :sequence,
 												value: [%{length: 19,
 																	type: :sequence,
@@ -155,14 +169,14 @@ defmodule ASN1TypesTest do
 																						value: nil}
 																				 ]
 																 },
-																%{length: 19,
+																%{length: 20,
 																	type: :sequence,
 																	value: [%{length: 15,
 																						type: :oid,
 																						value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.16"},
-																					%{length: 0,
-																						type: :null,
-																						value: nil}
+																					%{length: 1,
+																						type: :integer32,
+																						value: 1}
 																				 ]
 																 }
 															 ]

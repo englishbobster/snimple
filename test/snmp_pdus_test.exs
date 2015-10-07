@@ -69,7 +69,7 @@ defmodule SnmpPdusTest do
 	end
 
 	defp test_varbind_list do
-				vbl = [
+		[
 			{"1.3.6.1.2.1.1.3.0", {872197439, :timeticks}},
 			{"1.3.6.1.6.3.1.1.4.1.0", {"1.3.6.1.4.1.8708.2.1.2.3.0.7", :oid}},
 			{"1.3.6.1.4.1.8708.2.1.2.2.1.1.1.50", {50, :gauge32}},
@@ -209,7 +209,27 @@ defmodule SnmpPdusTest do
 	end
 
 	test "should be able to decode an snmpinform pdu" do
-		assert decode_pdu(example_snmpinform_pdu) == %{}
+		assert decode_pdu(example_snmpinform_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
+             error_status: %{length: 1, type: :integer32, value: 0}, length: 87,
+             request_id: %{length: 4, type: :integer32, value: 1581289378},
+             type: :snmpinform,
+             var_bind_list: %{length: 73, type: :sequence,
+               value: [%{length: 23, type: :sequence,
+                  value: [%{length: 10, type: :oid,
+                     value: ".1.3.6.1.6.3.1.1.4.1.0"},
+                   %{length: 9, type: :oid, value: ".1.3.6.1.6.3.1.1.5.3"}]},
+                %{length: 14, type: :sequence,
+                  value: [%{length: 9, type: :oid,
+                     value: ".1.3.6.1.2.1.2.2.1.1"},
+                   %{length: 1, type: :integer32, value: 2}]},
+                %{length: 14, type: :sequence,
+                  value: [%{length: 9, type: :oid,
+                     value: ".1.3.6.1.2.1.2.2.1.7"},
+                   %{length: 1, type: :integer32, value: 1}]},
+                %{length: 14, type: :sequence,
+                  value: [%{length: 9, type: :oid,
+                     value: ".1.3.6.1.2.1.2.2.1.8"},
+                   %{length: 1, type: :integer32, value: 1}]}]}}
 	end
 
 	test "should be able to decode an snmptrap pdu" do

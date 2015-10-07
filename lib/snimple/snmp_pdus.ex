@@ -56,10 +56,6 @@ defmodule Snimple.SnmpPdus do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpget)
 	end
 
-	def encode_pdu(vblist, requid, errst, errin, :snmpresponse) do
-		_encode_pdu(vblist, requid, errst, errin, :snmpresponse)
-	end
-
 	def encode_pdu(vblist, requid, :snmpgetnext) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpgetnext)
 	end
@@ -74,6 +70,10 @@ defmodule Snimple.SnmpPdus do
 
 	def encode_pdu(vblist, requid, :snmpinform) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpinform)
+	end
+
+	def encode_pdu(vblist, requid, errst, errin, :snmpresponse) do
+		_encode_pdu(vblist, requid, errst, errin, :snmpresponse)
 	end
 
 	def encode_pdu(vblist, requid, nonrepeat, maxreps, :snmpgetbulk) do
@@ -120,7 +120,7 @@ defmodule Snimple.SnmpPdus do
 		_decode_std_pdu(data, :snmptrap)
 	end
 
-	def var_bind({oid, {value, type}} = vb) do
+	def var_bind({oid, {value, type}}) do
 		SNMP.encode([{oid, :oid},{value, type}], :sequence)
 	end
 

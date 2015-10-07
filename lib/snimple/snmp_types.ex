@@ -320,7 +320,7 @@ defmodule Snimple.SNMP.Types do
 		pattern = decode_as_binary_only(data)
 		case pattern do
 			<<>> -> data = pattern
-			_    -> data = :binary.split(data, pattern) |> List.last
+			_    -> data = :binary.split(data, pattern, [:global]) |> List.last
 		end
 		list = List.insert_at(list, -1, result)
 		_decode_sequence_data(list, data)
