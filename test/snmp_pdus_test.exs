@@ -161,19 +161,51 @@ defmodule SnmpPdusTest do
 	end
 
 	test "should be able to decode an snmpgetnext pdu" do
-		assert decode_pdu(example_snmpgetnext_pdu) == %{}
+		assert decode_pdu(example_snmpgetnext_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
+             error_status: %{length: 1, type: :integer32, value: 0}, length: 35,
+             request_id: %{length: 4, type: :integer32, value: 1601778559},
+             type: :snmpgetnext,
+             var_bind_list: %{length: 21, type: :sequence,
+               value: [%{length: 19, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.21"},
+                   %{length: 0, type: :null, value: nil}]}]}}
 	end
 
 	test "should be able to decode an snmpresponse pdu" do
-		assert decode_pdu(example_snmpresponse_pdu) == %{}
+		assert decode_pdu(example_snmpresponse_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
+             error_status: %{length: 1, type: :integer32, value: 0}, length: 37,
+             request_id: %{length: 4, type: :integer32, value: 2138176743},
+             type: :snmpresponse,
+             var_bind_list: %{length: 23, type: :sequence,
+               value: [%{length: 21, type: :sequence,
+                  value: [%{length: 16, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.3.2.4.1.1.4.253"},
+                   %{length: 1, type: :integer32, value: 8}]}]}}
 	end
 
 	test "should be able to decode an snmpset pdu" do
-		assert decode_pdu(example_snmpset_pdu) == %{}
+		assert decode_pdu(example_snmpset_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
+             error_status: %{length: 1, type: :integer32, value: 0}, length: 33,
+             request_id: %{length: 4, type: :integer32, value: 749454221},
+             type: :snmpset,
+             var_bind_list: %{length: 19, type: :sequence,
+               value: [%{length: 17, type: :sequence,
+                  value: [%{length: 8, type: :oid, value: ".1.3.6.1.2.1.1.6.0"},
+                   %{length: 5, type: :octetstring, value: "south"}]}]}}
 	end
 
 	test "should be able to decode an snmpbulk pdu" do
-		assert decode_pdu(example_snmpbulkget_pdu) == %{}
+		assert decode_pdu(example_snmpbulkget_pdu) == %{length: 33,
+             max_repetitions: %{length: 1, type: :integer32, value: 10},
+             non_repeaters: %{length: 1, type: :integer32, value: 0},
+             request_id: %{length: 4, type: :integer32, value: 394852789},
+             type: :snmpgetbulk,
+             var_bind_list: %{length: 19, type: :sequence,
+               value: [%{length: 17, type: :sequence,
+                  value: [%{length: 13, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.1.1.0"},
+                   %{length: 0, type: :null, value: nil}]}]}}
 	end
 
 	test "should be able to decode an snmpinform pdu" do
@@ -181,7 +213,77 @@ defmodule SnmpPdusTest do
 	end
 
 	test "should be able to decode an snmptrap pdu" do
-		assert decode_pdu(example_snmptrap_pdu) == %{}
+		assert decode_pdu(example_snmptrap_pdu) == %{error_index: %{length: 1, type: :integer32, value: 0},
+             error_status: %{length: 1, type: :integer32, value: 0},
+             length: 441,
+             request_id: %{length: 4, type: :integer32, value: 935904613},
+             type: :snmptrap,
+             var_bind_list: %{length: 425, type: :sequence,
+               value: [%{length: 16, type: :sequence,
+                  value: [%{length: 8, type: :oid, value: ".1.3.6.1.2.1.1.3.0"},
+                   %{length: 4, type: :timeticks, value: 872197439}]},
+                %{length: 27, type: :sequence,
+                  value: [%{length: 10, type: :oid,
+                     value: ".1.3.6.1.6.3.1.1.4.1.0"},
+                   %{length: 13, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.3.0.7"}]},
+                %{length: 20, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.1.50"},
+                   %{length: 1, type: :gauge32, value: 50}]},
+                %{length: 32, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.2.50"},
+                   %{length: 13, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.5.2.0"}]},
+                %{length: 32, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.3.50"},
+                   %{length: 13, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.5.5.0"}]},
+                %{length: 28, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.4.50"},
+                   %{length: 9, type: :octetstring, value: "alarmTest"}]},
+                %{length: 20, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.5.50"},
+                   %{length: 1, type: :gauge32, value: 5}]},
+                %{length: 20, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.6.50"},
+                   %{length: 1, type: :gauge32, value: 0}]},
+                %{length: 20, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.7.50"},
+                   %{length: 1, type: :integer32, value: 5}]},
+                %{length: 20, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.8.50"},
+                   %{length: 1, type: :integer32, value: 53}]},
+                %{length: 60, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.9.50"},
+                   %{length: 41, type: :octetstring,
+                     value: "Test of environmental type critical alarm"}]},
+                %{length: 20, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.10.50"},
+                   %{length: 1, type: :integer32, value: 6}]},
+                %{length: 30, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.11.50"},
+                   %{length: 11, type: :octetstring,
+                     value: <<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>}]},
+                %{length: 30, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.12.50"},
+                   %{length: 11, type: :octetstring,
+                     value: <<7, 223, 9, 13, 10, 11, 4, 0, 43, 2, 0>>}]},
+                %{length: 20, type: :sequence,
+                  value: [%{length: 15, type: :oid,
+                     value: ".1.3.6.1.4.1.8708.2.1.2.2.1.1.13.50"},
+                   %{length: 1, type: :counter32, value: 93}]}]}}
 	end
 
 	defp assert_correct_pdu_identifier(pdu, identifier) do

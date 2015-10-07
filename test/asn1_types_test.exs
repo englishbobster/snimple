@@ -136,6 +136,12 @@ defmodule ASN1TypesTest do
 		assert decode(<< 48, 19, 6, 15, 43, 6, 1, 4, 1, 196, 4, 2, 1, 2, 2, 1, 1, 3, 16, 5, 0 >> <> "too long") == expected_result
 	end
 
+	test "should be able to decode a small sequence binary correctly" do
+		{:ok, seq} = Base.decode16("30493017060a2b06010603010104010006092b06010" <>
+			"60301010503300e06092b0601020102020101020102" <> "300e06092b0601020102020107020101" <>"300e06092b0601020102020108020101", [case: :lower])
+		assert decode(seq) == %{}
+	end
+
 	test "should be able to decode a sequence containing a sequence" do
 		expected_result = %{length: 42,
 												type: :sequence,

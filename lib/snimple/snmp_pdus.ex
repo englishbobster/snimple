@@ -93,31 +93,31 @@ defmodule Snimple.SnmpPdus do
 	end
 
   def decode_pdu(<< 0xa0, data::binary >>) do
-		_decode_std_pdu(data)
+		_decode_std_pdu(data, :snmpget)
 	end
 
 	def decode_pdu(<< 0xa1, data::binary >>) do
-		_decode_std_pdu(data)
+		_decode_std_pdu(data, :snmpgetnext)
 	end
 
   def decode_pdu(<< 0xa2, data::binary >>) do
-		_decode_std_pdu(data)
+		_decode_std_pdu(data, :snmpresponse)
 	end
 
 	def decode_pdu(<< 0xa3, data::binary >>) do
-		_decode_std_pdu(data)
+		_decode_std_pdu(data, :snmpset)
 	end
 
 	def decode_pdu(<< 0xa5, data::binary >>) do
-		_decode_std_pdu(data)
+		_decode_non_std_pdu(data, :snmpgetbulk)
 	end
 
   def decode_pdu(<< 0xa6, data::binary >>) do
-		_decode_non_std_pdu(data)
+		_decode_std_pdu(data, :snmpinform)
 	end
 
 	def decode_pdu(<< 0xa7, data::binary >>) do
-		_decode_std_pdu(data)
+		_decode_std_pdu(data, :snmptrap)
 	end
 
 	def var_bind({oid, {value, type}} = vb) do
@@ -136,14 +136,14 @@ defmodule Snimple.SnmpPdus do
 	def error_status(status), do: SNMP.encode(status, :integer32)
 	def error_index(index), do: SNMP.encode(index, :integer32)
 
-	defp _decode_std_pdu (data) do
+	defp _decode_std_pdu(data, type) when is_atom(type) do
 		{len, data} = SNMP.decoded_data_size(data)
 		{requid, data} = _chomp_fields(data)
 		{error_stat, data} = _chomp_fields(data)
 		{error_in, data} = _chomp_fields(data)
 		sequence = SNMP.decode(data)
 
-		%{type: :snmpget,
+		%{type: type,
 			length: len,
 			request_id: requid,
 			error_status: error_stat,
@@ -157,7 +157,20 @@ defmodule Snimple.SnmpPdus do
 		data = :binary.split(data, pattern) |> List.last
 		{field_value, data}
 	end
-	def _decode_non_std_pdu(data) do
+	def _decode_non_std_pdu(data, type) when is_atom(type) do
+		{len, data} = SNMP.decoded_data_size(data)
+		{requid, data} = _chomp_fields(data)
+		{non_reps, data} = _chomp_fields(data)
+		{max_reps, data} = _chomp_fields(data)
+		sequence = SNMP.decode(data)
+		%{type: type,
+			length: len,
+			request_id: requid,
+			non_repeaters: non_reps,
+			max_repetitions: max_reps,
+			var_bind_list: sequence
+			}
+
 	end
 
 end

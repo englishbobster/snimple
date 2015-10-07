@@ -318,6 +318,10 @@ defmodule Snimple.SNMP.Types do
 	defp _decode_sequence_data(list, data) do
 		result = decode(data)
 		pattern = decode_as_binary_only(data)
+		IO.puts "data"
+		IO.inspect :binary.bin_to_list data
+		IO.puts "pattern"
+		IO.inspect :binary.bin_to_list pattern
 		case pattern do
 			<<>> -> data = pattern
 			_    -> data = :binary.split(data, pattern) |> List.last
