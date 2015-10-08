@@ -39,7 +39,7 @@ defmodule Snimple.SNMP.Types do
 		}
 	end
 	defp asn1_type(id) when is_atom(id) do
-		Dict.get(asn1_type_identifier, id)
+		asn1_type_identifier[id]
 	end
 
 	@doc ~S"""
@@ -66,7 +66,7 @@ defmodule Snimple.SNMP.Types do
 		 }
 	end
 	defp snmp_type(id) when is_atom(id) do
-		Dict.get(snmp_type_identifier, id)
+		snmp_type_identifier[id]
 	end
 	@doc ~S"""
 	Lists the supported SNMP derived types used by SNMP.

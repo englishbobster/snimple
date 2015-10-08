@@ -13,8 +13,8 @@ defmodule Snimple.SnmpPdus do
 			snmptrap:        0xA7
 		 }
 	end
-	def pdu_id(id) do
-		Dict.get(pdu_identifier, id)
+	def pdu_id(id) when is_atom(id) do
+		pdu_identifier[id]
 	end
 
 	def list_supported_pdus do
