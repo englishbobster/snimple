@@ -185,8 +185,7 @@ defmodule Snimple.SNMP.Types do
 		oid_nodes = oid_string |> String.strip(?.)
 		|> String.split(".")
 		|> Enum.map(fn nr -> String.to_integer(nr) end)
-		{[a, b], oid_tail} = oid_nodes
-		|> Enum.split(2)
+		{[a, b], oid_tail} = oid_nodes |> Enum.split(2)
 		oid = oid_tail
 		|> Enum.map(fn oid_node -> encode_oid_node(oid_node) end)
 		|> Enum.join

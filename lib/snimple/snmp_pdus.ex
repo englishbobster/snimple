@@ -45,10 +45,10 @@ defmodule Snimple.SnmpPdus do
 		]
 	end
 	def error(status) when is_atom(status) do
-		Dict.get(error_status, status)
+		error_status[status]
 	end
 	def error(status) when is_integer(status) do
-		{error, _} =error_status |> Enum.find(fn {_, status_code} -> status_code == status end)
+		{error, _} = error_status |> Enum.find(fn {_, status_code} -> status_code == status end)
 		error
 	end
 
