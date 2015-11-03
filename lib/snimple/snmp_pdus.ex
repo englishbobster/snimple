@@ -17,6 +17,15 @@ defmodule Snimple.SnmpPdus do
 		pdu_identifier[id]
 	end
 
+	@doc ~S"""
+	Lists all the supported SNMP pdu's of SNMPv2. The atoms listed can then be used in the encode_pdu function to denote
+	the intended PDU type.
+
+ ## Example
+      iex> Snimple.SnmpPdus.list_supported_pdus
+      [:notused, :snmpget, :snmpgetbulk, :snmpgetnext, :snmpinform, :snmpresponse, :snmpset, :snmptrap]
+
+  """
 	def list_supported_pdus do
 		Dict.keys(pdu_identifier)
 	end
@@ -55,6 +64,7 @@ defmodule Snimple.SnmpPdus do
 	def list_possible_errors do
 		Dict.keys(error_status)
 	end
+
 
 	def encode_pdu(vblist, requid, :snmpget) do
 		_encode_pdu(vblist, requid, error(:noError), 0, :snmpget)
