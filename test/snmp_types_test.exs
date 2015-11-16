@@ -7,11 +7,16 @@ defmodule SNMPTypesTest do
 		assert encode(8, :integer32) == << 2, 1, 8 >>
 		assert encode(256, :integer32) == << 2, 2, 1, 0 >>
 		assert encode(2138176743, :integer32) == << 2, 4, 127, 113, 252, 231 >>
-		assert encode(935904613, :integer32) == <<2, 4, 55, 200, 197, 101 >>
+		assert encode(935904613, :integer32) == << 2, 4, 55, 200, 197, 101 >>
+
+		assert encode(2147483647, :integer32) == << 2, 4, 127, 255, 255, 255 >>
+		assert encode(-2147483648, :integer32) == << 2, 4, 128, 0, 0, 0 >>
 	end
 
 	test "should be able to decode an integer32 type" do
 		assert decode(<< 2, 4, 127, 113, 252, 231 >>) == %{type: :integer32, length: 4, value: 2138176743}
+		assert decode(<< 2, 4, 127, 255, 255, 255 >>) == %{type: :integer32, length: 4, value: 2147483647}
+		assert decode(<< 2, 4, 128, 0, 0, 0 >>) == %{type: :integer32, length: 4, value: -2147483648}
 	end
 
 	test "should encode ipaddress correctly" do
