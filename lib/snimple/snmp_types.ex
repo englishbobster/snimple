@@ -105,7 +105,11 @@ defmodule Snimple.SNMP.Types do
   * `:octetstring`, `:opaque` -> `value` shall be a binary string.
   * `:null` -> `value` will be ignored.
   * `:ipaddr` -> `value` shall be a string representation of an ip address e.g. "127.0.0.1"
-  * `:integer32`, `:counter32`, `:gauge32`, `:timeticks`, `:counter64` -> `value` shall be an integer.
+  * `:integer32` -> `value` is a 32 bit signed integer.
+  * `:counter32` -> `value` is an unsigned 32 bit integer that wraps.
+  * `:gauge32`  ->  `value` is an unsigned 32 bit integer that can increase or descrease, cannot be smaller than zero and doesn't wrap.
+  * `:timeticks` -> `value` is an unsigned integer that represents the time in hundredths of a second.
+  * `:counter64` -> `value` is an unsigned 64 bit integer that wraps.
   * `:oid` -> `value` shall be a string representation of the oid e.g. ".1.3.4.6.567.4.4.1.1.2". The leading "." is not mandatory.
   * `:sequence` -> The sequence type is basically a wrapper type for all the other types. The `value` shall be a list of tuples defining
   values and types to be wrapped.
@@ -151,32 +155,6 @@ defmodule Snimple.SNMP.Types do
 		<< snmp_type(:ipaddr) >> <> << 4 >> <> ipaddr
 	end
 
-	def encode(value, :integer32) do
-		_encode_integer_type(value, @int32mask, :integer32)
-	end
-
-	def encode(value, :counter32) do
-		_encode_integer_type(value, @int32mask, :counter32)
-	end
-
-	def encode(value, :gauge32) when value <= @int32max do
-		_encode_integer_type(value, @int32mask, :gauge32)
-	end
-	def encode(_value, :gauge32) do
-		_encode_integer_type(@int32max, @int32mask, :gauge32)
-	end
-
-	def encode(centisecs, :timeticks) when centisecs <= @int32max do
-		_encode_integer_type(centisecs, @int32mask, :timeticks)
-	end
-	def encode(_centisecs, :timeticks) do
-		_encode_integer_type(@int32max, @int32mask, :timeticks)
-	end
-
-	def encode(value, :counter64) do
-		_encode_integer_type(value, @int64mask, :counter64)
-	end
-
 	def encode(legacy, :opaque) do
 		<< snmp_type(:opaque) >> <> encoded_data_size(legacy) <> legacy
 	end
@@ -205,6 +183,60 @@ defmodule Snimple.SNMP.Types do
 	defp _encode_node(value, current, remaining_bits) do
 		val = Bitwise.&&&(value, 0x7F) |> Bitwise.|||(0x80)
 		_encode_node(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7)
+	end
+
+	def encode(value, :integer32) when abs(value) >= 0xFFFFFF do
+		value_as_binary = << value::signed-32 >>
+		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :integer32) when abs(value) >= 0xFFFF do
+		value_as_binary = << value::signed-24 >>
+		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :integer32) when abs(value) >= 0xFF do
+		value_as_binary = << value::signed-16 >>
+		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :integer32) do
+		value_as_binary = << value::signed >>
+		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+	end
+
+
+	def encode(value, :counter32) do
+		_encode_integer_type(value, @int32mask, :counter32)
+	end
+
+	def encode(value, :gauge32) when value <= @int32max do
+		_encode_integer_type(value, @int32mask, :gauge32)
+	end
+	def encode(_value, :gauge32) do
+		_encode_integer_type(@int32max, @int32mask, :gauge32)
+	end
+
+	def encode(centisecs, :timeticks) when centisecs <= @int32max do
+		_encode_integer_type(centisecs, @int32mask, :timeticks)
+	end
+	def encode(_centisecs, :timeticks) do
+		_encode_integer_type(@int32max, @int32mask, :timeticks)
+	end
+
+	def encode(value, :counter64) do
+		_encode_integer_type(value, @int64mask, :counter64)
+	end
+
+	defp _encode_integer_type(value, mask, t) when is_atom(t) do
+		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
+		<< snmp_type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
+	end
+
+	def encoded_data_size(data), do: byte_size(data) |> _encoded_data_size()
+	defp _encoded_data_size(size) when size <= 127 do
+		<< size >>
+	end
+	defp _encoded_data_size(size) do
+		size_encoded = :binary.encode_unsigned(size)
+		<< byte_size(size_encoded) |> Bitwise.|||(0x80) >> <> size_encoded
 	end
 
 	@doc ~S"""
@@ -334,23 +366,9 @@ defmodule Snimple.SNMP.Types do
 			}
 	end
 
-	defp _encode_integer_type(value, mask, t) when is_atom(t) do
-		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
-		<< snmp_type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
-	end
-
 	def decode_as_binary_only(<<_::binary-size(1), data::binary >>) do
 		{len, data} = decoded_data_size(data)
 		:binary.part(data, 0, len)
-	end
-
-	def encoded_data_size(data), do: byte_size(data) |> _encoded_data_size()
-	defp _encoded_data_size(size) when size <= 127 do
-		<< size >>
-	end
-	defp _encoded_data_size(size) do
-		size_encoded = :binary.encode_unsigned(size)
-		<< byte_size(size_encoded) |> Bitwise.|||(0x80) >> <> size_encoded
 	end
 
 	def decoded_data_size(<< 0::size(1), shortform_size_data::size(7), data::binary >>) do
@@ -363,5 +381,4 @@ defmodule Snimple.SNMP.Types do
 	defp nr_of_bits(value) do
 		:erlang.trunc(:math.log2(value)) + 1
 	end
-
 end

@@ -3,13 +3,31 @@ defmodule SNMPTypesTest do
 
 	import Snimple.SNMP.Types
 
-	test "should be able to encode an integer32" do
-		assert encode(8, :integer32) == << 2, 1, 8 >>
-		assert encode(256, :integer32) == << 2, 2, 1, 0 >>
-		assert encode(2138176743, :integer32) == << 2, 4, 127, 113, 252, 231 >>
-		assert encode(935904613, :integer32) == << 2, 4, 55, 200, 197, 101 >>
+	test "should be able to encode 0 to integer32" do
+		assert encode(0, :integer32) == << 2, 1, 0 >>
+	end
 
+	test "should be able to encode small value to integer32" do
+		assert encode(8, :integer32) == << 2, 1, 8 >>
+	end
+
+	test "should be able to encode 2 byte value to integer32" do
+		assert encode(256, :integer32) == << 2, 2, 1, 0 >>
+	end
+
+	test "should be able to encode large positive value to integer32" do
+		assert encode(2138176743, :integer32) == << 2, 4, 127, 113, 252, 231 >>
+	end
+
+	test "should be able to encode large negative value to integer32" do
+		assert encode(-935904613, :integer32) == << 2, 4, 200, 55, 58, 155 >>
+	end
+
+	test "should be able to encode max positive value to integer32" do
 		assert encode(2147483647, :integer32) == << 2, 4, 127, 255, 255, 255 >>
+	end
+
+	test "should be able to encode min negative value to integer32" do
 		assert encode(-2147483648, :integer32) == << 2, 4, 128, 0, 0, 0 >>
 	end
 
