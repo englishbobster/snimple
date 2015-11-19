@@ -95,7 +95,7 @@ defmodule Snimple.SnmpPdus do
 		<> non_repeaters(nonrepeat)
 		<> max_repetitions(maxreps)
 		<> var_bind_list(vblist)
-		<< pdu_id(:snmpgetbulk) >> <> SNMP.encoded_data_size(body) <> body
+		<< pdu_id(:snmpgetbulk) >> <> SNMP.encode_field_size(body) <> body
 	end
 
   defp _encode_pdu(vblist, requid, errst, errin, type) do
@@ -103,7 +103,7 @@ defmodule Snimple.SnmpPdus do
 		<> error_status(errst)
 		<> error_index(errin)
 		<> var_bind_list(vblist)
-		<< pdu_id(type) >> <> SNMP.encoded_data_size(body) <> body
+		<< pdu_id(type) >> <> SNMP.encode_field_size(body) <> body
 	end
 
   def decode_pdu(<< 0xA0, data::binary >>) do

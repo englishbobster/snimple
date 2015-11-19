@@ -1,5 +1,5 @@
 defmodule Snimple.SNMP.Types do
-	use Bitwise
+	use Bitwise, only_operators: true
 
 	@int32max  (4294967295)
 	@int32mask (0xFFFFFFFF)
@@ -137,54 +137,54 @@ defmodule Snimple.SNMP.Types do
 
 	"""
 	def encode(value, :octetstring) do
-		<< asn1_type(:octetstring) >> <> encoded_data_size(value) <> value
+		<< asn1_type(:octetstring) >> <> encode_field_size(value) <> value
 	end
 
-	def encode(_, :null), do: << asn1_type(:null) >> <> << byte_size(<<>>) >>
+	def encode(_ignored, :null), do: << asn1_type(:null) >> <> << byte_size(<<>>) >>
 
-		def encode(value, :integer32) when abs(value) >= 0xFFFFFF do
+	def encode(value, :integer32) when abs(value) >= 0xFFFFFF do
 		value_as_binary = << value::signed-32 >>
-		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 	def encode(value, :integer32) when abs(value) >= 0xFFFF do
 		value_as_binary = << value::signed-24 >>
-		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 	def encode(value, :integer32) when abs(value) >= 0xFF do
 		value_as_binary = << value::signed-16 >>
-		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 	def encode(value, :integer32) do
 		value_as_binary = << value::signed >>
-		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 
 	def encode(value, :counter32) do
-		_encode_integer_type(value, @int32mask, :counter32)
+		encode_unsigned_integer_type(value, @int32mask, :counter32)
 	end
 
 	def encode(value, :gauge32) when value <= @int32max do
-		_encode_integer_type(value, @int32mask, :gauge32)
+		encode_unsigned_integer_type(value, @int32mask, :gauge32)
 	end
 	def encode(_value, :gauge32) do
-		_encode_integer_type(@int32max, @int32mask, :gauge32)
+		encode_unsigned_integer_type(@int32max, @int32mask, :gauge32)
 	end
 
 	def encode(centisecs, :timeticks) when centisecs <= @int32max do
-		_encode_integer_type(centisecs, @int32mask, :timeticks)
+		encode_unsigned_integer_type(centisecs, @int32mask, :timeticks)
 	end
 	def encode(_centisecs, :timeticks) do
-		_encode_integer_type(@int32max, @int32mask, :timeticks)
+		encode_unsigned_integer_type(@int32max, @int32mask, :timeticks)
 	end
 
 	def encode(value, :counter64) do
-		_encode_integer_type(value, @int64mask, :counter64)
+		encode_unsigned_integer_type(value, @int64mask, :counter64)
 	end
 
 	def encode(seq, :sequence) do
 		result = seq |> Enum.map(fn {value, type} -> encode(value, type) end)
 		|> Enum.join
-		<< asn1_type(:sequence) >> <> encoded_data_size(result) <> result
+		<< asn1_type(:sequence) >> <> encode_field_size(result) <> result
 	end
 
 	def encode(ip, :ipaddr) do
@@ -195,7 +195,7 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	def encode(legacy, :opaque) do
-		<< snmp_type(:opaque) >> <> encoded_data_size(legacy) <> legacy
+		<< snmp_type(:opaque) >> <> encode_field_size(legacy) <> legacy
 	end
 
 	def encode(oid_string, :oid) do
@@ -213,29 +213,29 @@ defmodule Snimple.SNMP.Types do
 	end
 	def encode_oid_node(node) do
 		size = nr_of_bits(node)
-		value = << Bitwise.&&&(node, 0x7F) >>
-		_encode_node(Bitwise.>>>(node, 7), value, size - 7)
+		value = << (node &&& 0x7F) >>
+		encode_node((node >>> 7), value, size - 7)
 	end
-	defp _encode_node(_, current, value) when value <= 0 do
+	defp encode_node(_, current, value) when value <= 0 do
 		current
 	end
-	defp _encode_node(value, current, remaining_bits) do
-		val = Bitwise.&&&(value, 0x7F) |> Bitwise.|||(0x80)
-		_encode_node(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7)
+	defp encode_node(value, current, remaining_bits) do
+		val = (value &&& 0x7F) ||| 0x80
+		encode_node((val >>> 7), << val >> <> current, remaining_bits - 7)
 	end
 
-	defp _encode_integer_type(value, mask, t) when is_atom(t) do
-		value_as_bin = Bitwise.&&&(value, mask) |> :binary.encode_unsigned
-		<< snmp_type(t) >> <> encoded_data_size(value_as_bin) <> value_as_bin
+	defp encode_unsigned_integer_type(value, mask, t) when is_atom(t) do
+		value_as_bin = (value &&& mask) |> :binary.encode_unsigned
+		<< snmp_type(t) >> <> encode_field_size(value_as_bin) <> value_as_bin
 	end
 
-	def encoded_data_size(data), do: byte_size(data) |> _encoded_data_size()
-	defp _encoded_data_size(size) when size <= 127 do
+	def encode_field_size(field), do: byte_size(field) |> encode_field_size_as_binary()
+	defp encode_field_size_as_binary(size) when size <= 127 do
 		<< size >>
 	end
-	defp _encoded_data_size(size) do
+	defp encode_field_size_as_binary(size) do
 		size_encoded = :binary.encode_unsigned(size)
-		<< byte_size(size_encoded) |> Bitwise.|||(0x80) >> <> size_encoded
+		<< byte_size(size_encoded) ||| (0x80) >> <> size_encoded
 	end
 
 	@doc ~S"""
@@ -291,18 +291,18 @@ defmodule Snimple.SNMP.Types do
 	end
 	def decode_oid_node(bin) do
 		list = :binary.bin_to_list(bin)
-		_decode_node(0, list, [])
+		decode_node(0, list, [])
 	end
-	defp _decode_node(_register, [], target) do
+	defp decode_node(_register, [], target) do
 		target
 	end
-	defp _decode_node(register, [head|tail], target) when head <= 127 do
+	defp decode_node(register, [head|tail], target) when head <= 127 do
 		register = register + head
-		_decode_node(0, tail, target ++ [register])
+		decode_node(0, tail, target ++ [register])
 	end
-	defp _decode_node(register, [head|tail], target) do
-		register = register + Bitwise.&&&(head, 0x7F)
-		_decode_node(Bitwise.<<<(register, 7), tail, target)
+	defp decode_node(register, [head|tail], target) do
+		register = register + (head &&& 0x7F)
+		decode_node((register <<< 7), tail, target)
 	end
 
 	def decode(<< 0x02, data::binary >>) do
@@ -328,43 +328,44 @@ defmodule Snimple.SNMP.Types do
 			value: value
 		 }
 	end
+
 	def decode(<< 0x40, data::binary >>) do
-		_decode_internal(data, :ipaddr, &_data_to_ip/1)
+		decode_internal(data, :ipaddr, &data_to_ip/1)
 	end
-	defp _data_to_ip(data) do
+	defp data_to_ip(data) do
 		data |> :binary.bin_to_list |> Enum.join(".")
 	end
 
 	def decode(<< 0x41, data::binary >>) do
-		_decode_internal(data, :counter32, &:binary.decode_unsigned/1)
+		decode_internal(data, :counter32, &:binary.decode_unsigned/1)
 	end
 
 	def decode(<< 0x42, data::binary >>) do
-		_decode_internal(data, :gauge32, &:binary.decode_unsigned/1)
+		decode_internal(data, :gauge32, &:binary.decode_unsigned/1)
 	end
 
 	def decode(<< 0x43, data::binary >>) do
-		_decode_internal(data, :timeticks, &:binary.decode_unsigned/1)
+		decode_internal(data, :timeticks, &:binary.decode_unsigned/1)
 	end
 
 	def decode(<< 0x44, data::binary >>) do
-		_decode_internal(data, :opaque, &(&1))
+		decode_internal(data, :opaque, &(&1))
 	end
 
 	def decode(<< 0x46, data::binary >>) do
-		_decode_internal(data, :counter64, &:binary.decode_unsigned/1)
+		decode_internal(data, :counter64, &:binary.decode_unsigned/1)
 	end
 
 	def decode(<< 0x30, data::binary >>) do
 		{len, data} = decoded_data_size(data)
 		data = :binary.part(data, 0, len)
-		sequence_list = _decode_sequence_data([], data)
+		sequence_list = decode_sequence_data([], data)
 		%{type: :sequence, length: len, value: sequence_list}
 	end
-	defp _decode_sequence_data(list, <<>>) do
+	defp decode_sequence_data(list, <<>>) do
 		list
 	end
-	defp _decode_sequence_data(list, data) do
+	defp decode_sequence_data(list, data) do
 		result = decode(data)
 		pattern = decode_as_binary_only(data)
 		case pattern do
@@ -372,10 +373,10 @@ defmodule Snimple.SNMP.Types do
 			_    -> data = :binary.split(data, pattern, [:global]) |> List.last
 		end
 		list = List.insert_at(list, -1, result)
-		_decode_sequence_data(list, data)
+		decode_sequence_data(list, data)
 	end
 
-	defp _decode_internal(data, type, decode_func) do
+	defp decode_internal(data, type, decode_func) do
 		{len, data} = decoded_data_size(data)
 		data = :binary.part(data, 0, len)
 		%{type: type,

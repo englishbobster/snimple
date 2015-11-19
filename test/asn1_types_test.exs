@@ -37,15 +37,15 @@ defmodule ASN1TypesTest do
 
 	#encoding binary sizes
 	test "should encode binary size small according to primitive, definite length" do
-		assert encoded_data_size(binary_size_small) == << 10 >>
+		assert encode_field_size(binary_size_small) == << 10 >>
 	end
 
  	test "should encode binary size large according to primitive, definite length" do
-		assert encoded_data_size(binary_size_large) == << 0x81, 250 >>
+		assert encode_field_size(binary_size_large) == << 0x81, 250 >>
 	end
 
 	test "should encode binary size mega according to primitive, definite length" do
-		assert encoded_data_size(binary_size_mega) == << 0x82, 1, 244 >>
+		assert encode_field_size(binary_size_mega) == << 0x82, 1, 244 >>
 	end
 
 	#decoding binary sizes
