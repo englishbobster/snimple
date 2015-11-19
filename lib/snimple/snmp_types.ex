@@ -307,19 +307,20 @@ defmodule Snimple.SNMP.Types do
 
 	def decode(<< 0x02, data::binary >>) do
 		{len, data} = decoded_data_size(data)
+		data = :binary.part(data, 0, len)
 		decode_int32(data, len)
 	end
-	defp decode_int32(<< value::signed >>, len) when len == 1 do
-		integer32_map(len, value)
+	defp decode_int32(<< value::signed >>, 1) do
+		integer32_map(1, value)
 	end
-	defp decode_int32(<< value::signed-16 >>, len) when len == 2 do
-		integer32_map(len, value)
+	defp decode_int32(<< value::signed-16 >>, 2)  do
+		integer32_map(2, value)
 	end
-	defp decode_int32(<< value::signed-24 >>, len) when len == 3 do
-		integer32_map(len, value)
+	defp decode_int32(<< value::signed-24 >>, 3) do
+		integer32_map(3, value)
 	end
-	defp decode_int32(<< value::signed-32 >>, len) when len == 4 do
-		integer32_map(len, value)
+	defp decode_int32(<< value::signed-32 >>, 4)  do
+		integer32_map(4, value)
 	end
 	defp integer32_map(len, value) do
 		%{type: :integer32,
@@ -327,7 +328,6 @@ defmodule Snimple.SNMP.Types do
 			value: value
 		 }
 	end
-
 	def decode(<< 0x40, data::binary >>) do
 		_decode_internal(data, :ipaddr, &_data_to_ip/1)
 	end
