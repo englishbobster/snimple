@@ -142,6 +142,45 @@ defmodule Snimple.SNMP.Types do
 
 	def encode(_, :null), do: << asn1_type(:null) >> <> << byte_size(<<>>) >>
 
+		def encode(value, :integer32) when abs(value) >= 0xFFFFFF do
+		value_as_binary = << value::signed-32 >>
+		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :integer32) when abs(value) >= 0xFFFF do
+		value_as_binary = << value::signed-24 >>
+		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :integer32) when abs(value) >= 0xFF do
+		value_as_binary = << value::signed-16 >>
+		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :integer32) do
+		value_as_binary = << value::signed >>
+		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
+	end
+
+	def encode(value, :counter32) do
+		_encode_integer_type(value, @int32mask, :counter32)
+	end
+
+	def encode(value, :gauge32) when value <= @int32max do
+		_encode_integer_type(value, @int32mask, :gauge32)
+	end
+	def encode(_value, :gauge32) do
+		_encode_integer_type(@int32max, @int32mask, :gauge32)
+	end
+
+	def encode(centisecs, :timeticks) when centisecs <= @int32max do
+		_encode_integer_type(centisecs, @int32mask, :timeticks)
+	end
+	def encode(_centisecs, :timeticks) do
+		_encode_integer_type(@int32max, @int32mask, :timeticks)
+	end
+
+	def encode(value, :counter64) do
+		_encode_integer_type(value, @int64mask, :counter64)
+	end
+
 	def encode(seq, :sequence) do
 		result = seq |> Enum.map(fn {value, type} -> encode(value, type) end)
 		|> Enum.join
@@ -183,46 +222,6 @@ defmodule Snimple.SNMP.Types do
 	defp _encode_node(value, current, remaining_bits) do
 		val = Bitwise.&&&(value, 0x7F) |> Bitwise.|||(0x80)
 		_encode_node(Bitwise.>>>(val, 7), << val >> <> current, remaining_bits - 7)
-	end
-
-	def encode(value, :integer32) when abs(value) >= 0xFFFFFF do
-		value_as_binary = << value::signed-32 >>
-		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :integer32) when abs(value) >= 0xFFFF do
-		value_as_binary = << value::signed-24 >>
-		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :integer32) when abs(value) >= 0xFF do
-		value_as_binary = << value::signed-16 >>
-		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :integer32) do
-		value_as_binary = << value::signed >>
-		<< snmp_type(:integer32) >> <> encoded_data_size(value_as_binary) <> value_as_binary
-	end
-
-
-	def encode(value, :counter32) do
-		_encode_integer_type(value, @int32mask, :counter32)
-	end
-
-	def encode(value, :gauge32) when value <= @int32max do
-		_encode_integer_type(value, @int32mask, :gauge32)
-	end
-	def encode(_value, :gauge32) do
-		_encode_integer_type(@int32max, @int32mask, :gauge32)
-	end
-
-	def encode(centisecs, :timeticks) when centisecs <= @int32max do
-		_encode_integer_type(centisecs, @int32mask, :timeticks)
-	end
-	def encode(_centisecs, :timeticks) do
-		_encode_integer_type(@int32max, @int32mask, :timeticks)
-	end
-
-	def encode(value, :counter64) do
-		_encode_integer_type(value, @int64mask, :counter64)
 	end
 
 	defp _encode_integer_type(value, mask, t) when is_atom(t) do
@@ -307,7 +306,26 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	def decode(<< 0x02, data::binary >>) do
-		_decode_internal(data, :integer32, &:binary.decode_unsigned/1)
+		{len, data} = decoded_data_size(data)
+		decode_int32(data, len)
+	end
+	defp decode_int32(<< value::signed >>, len) when len == 1 do
+		integer32_map(len, value)
+	end
+	defp decode_int32(<< value::signed-16 >>, len) when len == 2 do
+		integer32_map(len, value)
+	end
+	defp decode_int32(<< value::signed-24 >>, len) when len == 3 do
+		integer32_map(len, value)
+	end
+	defp decode_int32(<< value::signed-32 >>, len) when len == 4 do
+		integer32_map(len, value)
+	end
+	defp integer32_map(len, value) do
+		%{type: :integer32,
+			length: len,
+			value: value
+		 }
 	end
 
 	def decode(<< 0x40, data::binary >>) do
