@@ -3,6 +3,7 @@ defmodule SnmpPdusTest do
 
 	import Snimple.SnmpPdus
 
+	#these encoded snmp message examples and all encoded message fragments are all based on the tcpdumps in the examples folder
 	defp example_snmpget_pdu do
 		{:ok, pkt} = Base.decode16("a02402047f71fce70201000201003016301406102b06010401c40402030204010104817d0500", [case: :lower])
 		pkt
@@ -68,7 +69,7 @@ defmodule SnmpPdusTest do
 		pkt
 	end
 
-	defp test_varbind_list do
+	defp unencoded_varbind_list do
 		[
 			{"1.3.6.1.2.1.1.3.0", {872197439, :timeticks}},
 			{"1.3.6.1.6.3.1.1.4.1.0", {"1.3.6.1.4.1.8708.2.1.2.3.0.7", :oid}},
@@ -109,7 +110,7 @@ defmodule SnmpPdusTest do
 	end
 
 	test "should be able to construct an snmptrap pdu" do
-		encoded_pdu = encode_pdu(test_varbind_list, 935904613, :snmptrap)
+		encoded_pdu = encode_pdu(unencoded_varbind_list, 935904613, :snmptrap)
 		assert encoded_pdu == example_snmptrap_pdu
 	end
 
@@ -127,16 +128,22 @@ defmodule SnmpPdusTest do
 		assert encoded_pdu == example_snmpinform_pdu
 		end
 
-	test "should be able to make a variable binding of any type" do
+	test "should be able to make a variable binding with oid and null" do
 		assert var_bind({"1.3.1.1.1", {0, :null}}) == << 48, 8, 6, 4, 43, 1, 1, 1, 5, 0 >>
+	end
+
+	test "should be able to make a variable binding with oid and integer type" do
 		assert var_bind({"1.3.1.1.1", {4294967295, :gauge32}}) == << 48, 12, 6, 4, 43, 1, 1, 1, 66, 4, 255, 255, 255, 255 >>
+	end
+
+	test "should be able to make a variable binding with oid and octetstring" do
 		assert var_bind({"1.3.6.1.4.1.2680.1.2.7.3.2.0", {"octetstring", :octetstring}}) == << 48, 28 >>
 	      <> << 6, 13, 43, 6, 1, 4, 1, 148, 120, 1, 2, 7, 3, 2, 0 >>
 	      <> <<4, 11, 111, 99, 116, 101, 116, 115, 116, 114, 105, 110, 103>>
 	end
 
 	test "should be able to make a list of variable bindings" do
-		vblist = test_varbind_list |> var_bind_list()
+		vblist = unencoded_varbind_list |> var_bind_list()
 		assert vblist == example_var_bind_list
 	end
 
