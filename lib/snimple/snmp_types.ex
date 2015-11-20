@@ -7,7 +7,7 @@ defmodule Snimple.SNMP.Types do
 	@int64max  (18446744073709551615)
 
 	@moduledoc """
-	This SNMP imlementation should be compatible with SNMPv1 and SNMPv2c.
+	This SNMP imlementation should be compatible with at least SNMPv2c.
 	The module defines:
 
   * The types used in encoding and decoding SNMP messages.
@@ -43,7 +43,7 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	@doc ~S"""
-	Lists the supported ASN.1 types used by SNMP.
+	Helper function that lists the supported ASN.1 types used by SNMP.
 
  ## Example
       iex> Snimple.SNMP.Types.list_asn1_types
@@ -69,7 +69,7 @@ defmodule Snimple.SNMP.Types do
 		snmp_type_identifier[id]
 	end
 	@doc ~S"""
-	Lists the supported SNMP derived types used by SNMP.
+	Helper function that lists the supported SNMP derived types used by SNMP.
 
  ## Example
       iex> Snimple.SNMP.Types.list_snmp_types
@@ -81,7 +81,7 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	@doc ~S"""
-	Lists all the supported SNMP types, both derived and ASN.1.
+	Helper function that lists all the supported SNMP types, both derived and ASN.1.
 
  ## Example
       iex> Snimple.SNMP.Types.list_all_types
@@ -159,8 +159,21 @@ defmodule Snimple.SNMP.Types do
 		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 
+	def encode(value, :counter32) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
+		value_as_binary = << value::integer-32 >>
+		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter32) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
+		value_as_binary = << value::integer-24 >>
+		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter32) when abs(value) <= 0xFFFFFF and abs(value) > 0xFF do
+		value_as_binary = << value::integer-16 >>
+		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
 	def encode(value, :counter32) do
-		encode_unsigned_integer_type(value, @int32mask, :counter32)
+		value_as_binary = << value::integer >>
+		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 
 	def encode(value, :gauge32) when value <= @int32max do

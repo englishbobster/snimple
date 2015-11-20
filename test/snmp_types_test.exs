@@ -88,6 +88,10 @@ defmodule SNMPTypesTest do
 		assert encode(0, :counter32) == << 65, 1, 0 >>
 	end
 
+	test "should encode a small value to counter32 correctly" do
+		assert encode(256, :counter32) == << 65, 2, 1, 0 >>
+	end
+
 	test "should encode max value to counter32 correctly as unsigned integer32" do
 		assert encode(4294967295, :counter32) == << 65, 4, 255, 255, 255, 255 >>
 	end
