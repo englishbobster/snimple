@@ -160,27 +160,11 @@ defmodule Snimple.SNMP.Types do
 		format_tlv(:counter32, << value::integer-16 >>)
 	end
 	def encode(value, :counter32) do
-			format_tlv(:counter32, << value::integer >>)
+		format_tlv(:counter32, << value::integer >>)
 	end
 
 	def encode(value, type) when type == :gauge32 or type == :timeticks do
 		encode_gauge32_or_timeticks(value, type)
-	end
-
-	def encode_gauge32_or_timeticks(value, type) when abs(value) > 0xFFFFFFFF do
-		format_tlv(type, << 255, 255, 255, 255 >>)
-	end
-	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
-		format_tlv(type, << value::integer-32 >>)
-	end
-	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
-		format_tlv(type, << value::integer-24 >>)
-	end
-	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
-		format_tlv(type, << value::integer-16 >>)
-	end
-	def encode_gauge32_or_timeticks(value, type) do
-		format_tlv(type, << value::integer >>)
 	end
 
 	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFFFFFF do
@@ -238,11 +222,29 @@ defmodule Snimple.SNMP.Types do
 	def encode_oid_node(node) when node <= 127 do
 		<< node >>
 	end
+
+	def encode_gauge32_or_timeticks(value, type) when abs(value) > 0xFFFFFFFF do
+		format_tlv(type, << 255, 255, 255, 255 >>)
+	end
+	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
+		format_tlv(type, << value::integer-32 >>)
+	end
+	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
+		format_tlv(type, << value::integer-24 >>)
+	end
+	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
+		format_tlv(type, << value::integer-16 >>)
+	end
+	def encode_gauge32_or_timeticks(value, type) do
+		format_tlv(type, << value::integer >>)
+	end
+
 	def encode_oid_node(node) do
 		size = nr_of_bits(node)
 		value = << (node &&& 0x7F) >>
 		encode_node((node >>> 7), value, size - 7)
 	end
+
 	defp encode_node(_, current, value) when value <= 0 do
 		current
 	end
@@ -252,6 +254,7 @@ defmodule Snimple.SNMP.Types do
 	end
 
 	def encode_field_size(field), do: byte_size(field) |> encode_field_size_as_binary()
+
 	defp encode_field_size_as_binary(size) when size <= 127 do
 		<< size >>
 	end
@@ -290,18 +293,12 @@ defmodule Snimple.SNMP.Types do
 	def decode(<< 0x04, data::binary >>) do
 		{len, data} = decoded_data_size(data)
 		data = :binary.part(data, 0, len)
-		%{type: :octetstring,
-			length: len,
-			value: data
-			}
+		to_map(:octetstring, len, data)
 	end
 
 	def decode(<< 0x05, data::binary >>) do
 		{len, _} = decoded_data_size(data)
-		%{type: :null,
-			length: len,
-			value: nil
-		 }
+		to_map(:null, len, nil)
 	end
 
 	def decode(<< 0x06, data::binary >>) do
@@ -310,25 +307,7 @@ defmodule Snimple.SNMP.Types do
 		<< head, tail::binary >> = data
 		first_byte = [ 1, head - 40 ]
 		result = first_byte ++ decode_oid_node(tail) |> Enum.join(".")
-		%{type: :oid,
-			length: len,
-			value: "." <> result
-			}
-	end
-	def decode_oid_node(bin) do
-		list = :binary.bin_to_list(bin)
-		decode_node(0, list, [])
-	end
-	defp decode_node(_register, [], target) do
-		target
-	end
-	defp decode_node(register, [head|tail], target) when head <= 127 do
-		register = register + head
-		decode_node(0, tail, target ++ [register])
-	end
-	defp decode_node(register, [head|tail], target) do
-		register = register + (head &&& 0x7F)
-		decode_node((register <<< 7), tail, target)
+		to_map(:oid, len, "." <> result)
 	end
 
 	def decode(<< 0x02, data::binary >>) do
@@ -336,30 +315,9 @@ defmodule Snimple.SNMP.Types do
 		data = :binary.part(data, 0, len)
 		decode_int32(data, len)
 	end
-	defp decode_int32(<< value::signed >>, 1) do
-		integer32_map(1, value)
-	end
-	defp decode_int32(<< value::signed-16 >>, 2)  do
-		integer32_map(2, value)
-	end
-	defp decode_int32(<< value::signed-24 >>, 3) do
-		integer32_map(3, value)
-	end
-	defp decode_int32(<< value::signed-32 >>, 4)  do
-		integer32_map(4, value)
-	end
-	defp integer32_map(len, value) do
-		%{type: :integer32,
-			length: len,
-			value: value
-		 }
-	end
 
 	def decode(<< 0x40, data::binary >>) do
-		decode_internal(data, :ipaddr, &data_to_ip/1)
-	end
-	defp data_to_ip(data) do
-		data |> :binary.bin_to_list |> Enum.join(".")
+		decode_internal(data, :ipaddr, &to_ip/1)
 	end
 
 	def decode(<< 0x41, data::binary >>) do
@@ -386,8 +344,9 @@ defmodule Snimple.SNMP.Types do
 		{len, data} = decoded_data_size(data)
 		data = :binary.part(data, 0, len)
 		sequence_list = decode_sequence_data([], data)
-		%{type: :sequence, length: len, value: sequence_list}
+		to_map(:sequence, len, sequence_list)
 	end
+
 	defp decode_sequence_data(list, <<>>) do
 		list
 	end
@@ -405,10 +364,44 @@ defmodule Snimple.SNMP.Types do
 	defp decode_internal(data, type, decode_func) do
 		{len, data} = decoded_data_size(data)
 		data = :binary.part(data, 0, len)
+		to_map(type, len, decode_func.(data))
+	end
+
+	def decode_oid_node(bin) do
+		list = :binary.bin_to_list(bin)
+		decode_node(0, list, [])
+	end
+
+	defp decode_node(_register, [], target) do
+		target
+	end
+	defp decode_node(register, [head|tail], target) when head <= 127 do
+		register = register + head
+		decode_node(0, tail, target ++ [register])
+	end
+	defp decode_node(register, [head|tail], target) do
+		register = register + (head &&& 0x7F)
+		decode_node((register <<< 7), tail, target)
+	end
+
+	defp decode_int32(<< value::signed >>, 1) do
+		to_map(:integer32, 1, value)
+	end
+	defp decode_int32(<< value::signed-16 >>, 2)  do
+		to_map(:integer32, 2, value)
+	end
+	defp decode_int32(<< value::signed-24 >>, 3) do
+		to_map(:integer32, 3, value)
+	end
+	defp decode_int32(<< value::signed-32 >>, 4)  do
+		to_map(:integer32, 4, value)
+	end
+
+	defp to_map(type, len, value) do
 		%{type: type,
 			length: len,
-			value: decode_func.(data)
-			}
+			value: value
+		 }
 	end
 
 	def decode_as_binary_only(<<_::binary-size(1), data::binary >>) do
@@ -421,6 +414,10 @@ defmodule Snimple.SNMP.Types do
 	end
 	def decoded_data_size(<< 1::size(1), longform_size::size(7), size_data::binary-size(longform_size), data::binary >>) do
 		{:binary.decode_unsigned(size_data), data}
+	end
+
+	defp to_ip(binary) do
+		binary |> :binary.bin_to_list |> Enum.join(".")
 	end
 
 	defp nr_of_bits(value) do
