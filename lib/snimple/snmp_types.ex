@@ -1,11 +1,6 @@
 defmodule Snimple.SNMP.Types do
 	use Bitwise, only_operators: true
 
-	@int32max  (4294967295)
-	@int32mask (0xFFFFFFFF)
-	@int64mask (0xFFFFFFFFFFFFFFFF)
-	@int64max  (18446744073709551615)
-
 	@moduledoc """
 	This SNMP imlementation should be compatible with at least SNMPv2c.
 	The module defines:
@@ -229,11 +224,24 @@ defmodule Snimple.SNMP.Types do
 		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 
-	def encode(centisecs, :timeticks) when centisecs <= @int32max do
-		encode_unsigned_integer_type(centisecs, @int32mask, :timeticks)
+	def encode(value, :timeticks) when abs(value) > 0xFFFFFFFF do
+		<< snmp_type(:timeticks) >> <> << 4 >> <> << 255, 255, 255, 255 >>
 	end
-	def encode(_centisecs, :timeticks) do
-		encode_unsigned_integer_type(@int32max, @int32mask, :timeticks)
+	def encode(value, :timeticks) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
+		value_as_binary = << value::integer-32 >>
+		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :timeticks) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
+		value_as_binary = << value::integer-24 >>
+		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :timeticks) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
+		value_as_binary = << value::integer-16 >>
+		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :timeticks) do
+		value_as_binary = << value::integer >>
+		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 
 	def encode(seq, :sequence) do
@@ -277,11 +285,6 @@ defmodule Snimple.SNMP.Types do
 	defp encode_node(value, current, remaining_bits) do
 		val = (value &&& 0x7F) ||| 0x80
 		encode_node((val >>> 7), << val >> <> current, remaining_bits - 7)
-	end
-
-	defp encode_unsigned_integer_type(value, mask, t) when is_atom(t) do
-		value_as_bin = (value &&& mask) |> :binary.encode_unsigned
-		<< snmp_type(t) >> <> encode_field_size(value_as_bin) <> value_as_bin
 	end
 
 	def encode_field_size(field), do: byte_size(field) |> encode_field_size_as_binary()
