@@ -167,7 +167,7 @@ defmodule Snimple.SNMP.Types do
 		value_as_binary = << value::integer-24 >>
 		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
-	def encode(value, :counter32) when abs(value) <= 0xFFFFFF and abs(value) > 0xFF do
+	def encode(value, :counter32) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
 		value_as_binary = << value::integer-16 >>
 		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
@@ -176,11 +176,57 @@ defmodule Snimple.SNMP.Types do
 		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 
-	def encode(value, :gauge32) when value <= @int32max do
-		encode_unsigned_integer_type(value, @int32mask, :gauge32)
+	def encode(value, :gauge32) when abs(value) > 0xFFFFFFFF do
+		<< snmp_type(:gauge32) >> <> << 4 >> <> << 255, 255, 255, 255 >>
 	end
-	def encode(_value, :gauge32) do
-		encode_unsigned_integer_type(@int32max, @int32mask, :gauge32)
+	def encode(value, :gauge32) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
+		value_as_binary = << value::integer-32 >>
+		<< snmp_type(:gauge32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :gauge32) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
+		value_as_binary = << value::integer-24 >>
+		<< snmp_type(:gauge32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :gauge32) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
+		value_as_binary = << value::integer-16 >>
+		<< snmp_type(:gauge32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :gauge32) do
+		value_as_binary = << value::integer >>
+		<< snmp_type(:gauge32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFFFFFF do
+		value_as_binary = << value::integer-64 >>
+		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFFFF do
+		value_as_binary = << value::integer-56 >>
+		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFF do
+		value_as_binary = << value::integer-48 >>
+		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFF and abs(value) > 0xFFFFFFFF do
+		value_as_binary = << value::integer-40 >>
+		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
+		value_as_binary = << value::integer-32 >>
+		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
+		value_as_binary = << value::integer-24 >>
+		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
+		value_as_binary = << value::integer-16 >>
+		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+	def encode(value, :counter64) do
+		value_as_binary = << value::integer >>
+		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
 	end
 
 	def encode(centisecs, :timeticks) when centisecs <= @int32max do
@@ -188,10 +234,6 @@ defmodule Snimple.SNMP.Types do
 	end
 	def encode(_centisecs, :timeticks) do
 		encode_unsigned_integer_type(@int32max, @int32mask, :timeticks)
-	end
-
-	def encode(value, :counter64) do
-		encode_unsigned_integer_type(value, @int64mask, :counter64)
 	end
 
 	def encode(seq, :sequence) do
