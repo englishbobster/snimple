@@ -138,90 +138,45 @@ defmodule Snimple.SNMP.Types do
 	def encode(_ignored, :null), do: << asn1_type(:null) >> <> << byte_size(<<>>) >>
 
 	def encode(value, :integer32) when abs(value) >= 0xFFFFFF do
-		value_as_binary = << value::signed-32 >>
-		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:integer32, << value::signed-32 >>)
 	end
 	def encode(value, :integer32) when abs(value) >= 0xFFFF do
-		value_as_binary = << value::signed-24 >>
-		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:integer32, << value::signed-24 >>)
 	end
 	def encode(value, :integer32) when abs(value) >= 0xFF do
-		value_as_binary = << value::signed-16 >>
-		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:integer32, << value::signed-16 >>)
 	end
 	def encode(value, :integer32) do
-		value_as_binary = << value::signed >>
-		<< snmp_type(:integer32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:integer32, << value::signed >>)
 	end
 
 	def encode(value, :counter32) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
-		value_as_binary = << value::integer-32 >>
-		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:counter32, << value::integer-32 >>)
 	end
 	def encode(value, :counter32) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
-		value_as_binary = << value::integer-24 >>
-		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:counter32, << value::integer-24 >>)
 	end
 	def encode(value, :counter32) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
-		value_as_binary = << value::integer-16 >>
-		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:counter32, << value::integer-16 >>)
 	end
 	def encode(value, :counter32) do
-		value_as_binary = << value::integer >>
-		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+			format_tlv(:counter32, << value::integer >>)
 	end
 
 	def encode(value, :gauge32) when abs(value) > 0xFFFFFFFF do
-		<< snmp_type(:gauge32) >> <> << 4 >> <> << 255, 255, 255, 255 >>
+		format_tlv(:gauge32, << 255, 255, 255, 255 >>)
 	end
 	def encode(value, :gauge32) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
-		value_as_binary = << value::integer-32 >>
-		<< snmp_type(:gauge32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:gauge32, << value::integer-32 >>)
 	end
 	def encode(value, :gauge32) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
-		value_as_binary = << value::integer-24 >>
-		<< snmp_type(:gauge32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:gauge32, << value::integer-24 >>)
 	end
 	def encode(value, :gauge32) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
-		value_as_binary = << value::integer-16 >>
-		<< snmp_type(:gauge32) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:gauge32, << value::integer-16 >>)
 	end
 	def encode(value, :gauge32) do
-		value_as_binary = << value::integer >>
-		<< snmp_type(:gauge32) >> <> encode_field_size(value_as_binary) <> value_as_binary
-	end
-
-	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFFFFFF do
-		value_as_binary = << value::integer-64 >>
-		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFFFF do
-		value_as_binary = << value::integer-56 >>
-		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFF do
-		value_as_binary = << value::integer-48 >>
-		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFF and abs(value) > 0xFFFFFFFF do
-		value_as_binary = << value::integer-40 >>
-		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
-		value_as_binary = << value::integer-32 >>
-		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :counter64) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
-		value_as_binary = << value::integer-24 >>
-		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :counter64) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
-		value_as_binary = << value::integer-16 >>
-		<< snmp_type(:counter32) >> <> encode_field_size(value_as_binary) <> value_as_binary
-	end
-	def encode(value, :counter64) do
-		value_as_binary = << value::integer >>
-		<< snmp_type(:counter64) >> <> encode_field_size(value_as_binary) <> value_as_binary
+		format_tlv(:gauge32, << value::integer >>)
 	end
 
 	def encode(value, :timeticks) when abs(value) > 0xFFFFFFFF do
@@ -242,6 +197,31 @@ defmodule Snimple.SNMP.Types do
 	def encode(value, :timeticks) do
 		value_as_binary = << value::integer >>
 		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	end
+
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFFFFFF do
+		format_tlv(:counter64, << value::integer-64 >>)
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFFFF do
+		format_tlv(:counter64, << value::integer-56 >>)
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFF do
+		format_tlv(:counter64, << value::integer-48 >>)
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFF and abs(value) > 0xFFFFFFFF do
+		format_tlv(:counter64, << value::integer-40 >>)
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
+		format_tlv(:counter64, << value::integer-32 >>)
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
+		format_tlv(:counter64, << value::integer-24 >>)
+	end
+	def encode(value, :counter64) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
+		format_tlv(:counter64, << value::integer-16 >>)
+	end
+	def encode(value, :counter64) do
+		format_tlv(:counter64, << value::integer >>)
 	end
 
 	def encode(seq, :sequence) do
@@ -294,6 +274,10 @@ defmodule Snimple.SNMP.Types do
 	defp encode_field_size_as_binary(size) do
 		size_encoded = :binary.encode_unsigned(size)
 		<< byte_size(size_encoded) ||| (0x80) >> <> size_encoded
+	end
+
+	defp format_tlv(type, data) do
+		<< snmp_type(type) >> <> encode_field_size(data) <> data
 	end
 
 	@doc ~S"""
