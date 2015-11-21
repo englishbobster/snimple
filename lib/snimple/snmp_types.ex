@@ -163,40 +163,24 @@ defmodule Snimple.SNMP.Types do
 			format_tlv(:counter32, << value::integer >>)
 	end
 
-	def encode(value, :gauge32) when abs(value) > 0xFFFFFFFF do
-		format_tlv(:gauge32, << 255, 255, 255, 255 >>)
-	end
-	def encode(value, :gauge32) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
-		format_tlv(:gauge32, << value::integer-32 >>)
-	end
-	def encode(value, :gauge32) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
-		format_tlv(:gauge32, << value::integer-24 >>)
-	end
-	def encode(value, :gauge32) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
-		format_tlv(:gauge32, << value::integer-16 >>)
-	end
-	def encode(value, :gauge32) do
-		format_tlv(:gauge32, << value::integer >>)
+	def encode(value, type) when type == :gauge32 or type == :timeticks do
+		encode_gauge32_or_timeticks(value, type)
 	end
 
-	def encode(value, :timeticks) when abs(value) > 0xFFFFFFFF do
-		<< snmp_type(:timeticks) >> <> << 4 >> <> << 255, 255, 255, 255 >>
+	def encode_gauge32_or_timeticks(value, type) when abs(value) > 0xFFFFFFFF do
+		format_tlv(type, << 255, 255, 255, 255 >>)
 	end
-	def encode(value, :timeticks) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
-		value_as_binary = << value::integer-32 >>
-		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFFFFFF and abs(value) > 0xFFFFFF do
+		format_tlv(type, << value::integer-32 >>)
 	end
-	def encode(value, :timeticks) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
-		value_as_binary = << value::integer-24 >>
-		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFFFF and abs(value) > 0xFFFF do
+		format_tlv(type, << value::integer-24 >>)
 	end
-	def encode(value, :timeticks) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
-		value_as_binary = << value::integer-16 >>
-		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	def encode_gauge32_or_timeticks(value, type) when abs(value) <= 0xFFFF and abs(value) > 0xFF do
+		format_tlv(type, << value::integer-16 >>)
 	end
-	def encode(value, :timeticks) do
-		value_as_binary = << value::integer >>
-		<< snmp_type(:timeticks) >> <> encode_field_size(value_as_binary) <> value_as_binary
+	def encode_gauge32_or_timeticks(value, type) do
+		format_tlv(type, << value::integer >>)
 	end
 
 	def encode(value, :counter64) when abs(value) <= 0xFFFFFFFFFFFFFFFF and abs(value) > 0xFFFFFFFFFFFFFF do
@@ -234,7 +218,7 @@ defmodule Snimple.SNMP.Types do
 		ipaddr = ip |> String.split(".")
 		|> Enum.map(fn n -> String.to_integer(n) end)
 		|> :binary.list_to_bin
-		<< snmp_type(:ipaddr) >> <> << 4 >> <> ipaddr
+		format_tlv(:ipaddr, ipaddr)
 	end
 
 	def encode(legacy, :opaque) do
