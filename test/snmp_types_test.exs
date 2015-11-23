@@ -1,5 +1,5 @@
 defmodule SNMPTypesTest do
-	use ExUnit.Case
+	use ExUnit.Case, async: true
 
 	import Snimple.SNMP.Types
 
