@@ -10,5 +10,5 @@ defmodule Snimple do
 		message = Socket.Datagram.recv(port)
 		IO.inspect(message)
 	end
-	
+
 end
