@@ -7,7 +7,7 @@ defmodule Snimple.Mixfile do
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-		 escript: escript,
+         escript: escript,
      deps: deps]
   end
 
@@ -29,13 +29,13 @@ defmodule Snimple.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-			{:socket, "~>0.3.0"},
-			{:credo, "~> 0.1.9", only: [:dev, :test]}
-		]
+            {:socket, "~>0.3.0"},
+            {:credo, "~> 0.1.9", only: [:dev, :test]}
+        ]
   end
 
-	defp escript do
-		[main_module: Snimple]
-	end
+    defp escript do
+        [main_module: Snimple]
+    end
 
 end
