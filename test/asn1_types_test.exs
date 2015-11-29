@@ -2,7 +2,7 @@ defmodule ASN1TypesTest do
     use ExUnit.Case, async: true
 
     import Snimple.SNMP.Types
-  doctest Snimple.SNMP.Types
+    doctest Snimple.SNMP.Types
 
     defp test_string,  do: "a test octet string"
     defp binary_size_small, do: 1..10 |> Enum.map(fn x -> x end) |> :binary.list_to_bin
